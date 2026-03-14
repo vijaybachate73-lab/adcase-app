@@ -583,8 +583,8 @@
     // ✅ SUPABASE CONFIGURATION
     // ⚠️  तुमचा Supabase URL आणि Anon Key इथे टाका
     // ============================================================
-    var SUPABASE_URL  = 'https://oguueuvowwkkwamvxvrs.supabase.co';   // e.g. https://xxxx.supabase.co
-    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ndXVldXZvd3dra3dhbXZ4dnJzIiwicm9sZSI6ImFub24iLCJpYXQiOj'; // Project Settings > API
+    var SUPABASE_URL  = 'https://oguueuvowwkkwamvxvrs.supabase.co';
+var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
 
     var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     console.log('✅ Supabase client initialized');
@@ -1303,7 +1303,7 @@
 
     function aOpenPwd(email) {
         aPwdTargetId=email;
-        var c=clients.find(function(x){ return x.email===email; });
+        var c=clients.find(function(x){ return x.email===email; });h
         document.getElementById('aPwdModalName').textContent='Change password for: '+(c?c.name:email);
         document.getElementById('aNewPwdInput').value='';
         document.getElementById('aPwdModal').classList.add('open');
