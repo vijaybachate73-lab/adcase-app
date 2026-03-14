@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AdCase</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Poppins:wght@700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        :root {
+            --primary: #14B8A6;
+            --secondary: #06B6D4;
+            --accent: #2DD4BF;
+            --dark-blue: #0891B2;
+            --bg: #F9FAFB;
+            --text: #1F2937;
+            --muted: #6B7280;
+            --border: #E5E7EB;
+            --grey-85: #D9D9D9;
+            --dark-grey: #374151;
+        }
+
+        @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes slideInLeft { from { opacity:0; transform:translateX(-30px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes slideUp { from { opacity:0; transform:translateY(50px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+        @keyframes pulse { 0%, 100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+
+        html { scroll-behavior:smooth; }
+
+        ::-webkit-scrollbar { width:8px; height:8px; }
+        ::-webkit-scrollbar-track { background:#f1f1f1; border-radius:10px; }
+        ::-webkit-scrollbar-thumb { background:linear-gradient(var(--primary),var(--secondary)); border-radius:10px; }
+        ::-webkit-scrollbar-thumb:hover { background:linear-gradient(var(--secondary),var(--dark-blue)); }
+
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); max-width:430px; margin:0 auto; min-height:100vh; }
+
+        #loginScreen { min-height:100vh; background:#FAFAFA; animation:fadeIn 0.5s ease; }
+        #homeScreen  { background:var(--bg); min-height:100vh; padding-bottom:40px; animation:fadeIn 0.5s ease; }
+
+        .login-hero { background:var(--dark-grey); padding:70px 30px 80px; text-align:center; position:relative; overflow:visible; }
+        .login-logo { font-family:'Inter',sans-serif; font-size:3rem; font-weight:800; color:white; letter-spacing:-2px; position:relative; z-index:10; }
+        .login-logo span { color:var(--primary); }
+        .login-tagline { color:var(--grey-85); font-size:0.9rem; margin-top:8px; font-weight:500; letter-spacing:0.3px; position:relative; z-index:10; }
+
+        .login-body { padding:44px 28px 40px; background:white; margin:-20px 16px 20px; border-radius:20px; box-shadow:0 4px 20px rgba(0,0,0,0.06); position:relative; }
+        .login-body h2 { font-size:1.8rem; font-weight:700; margin-bottom:8px; color:var(--text); }
+        .login-body .sub { color:var(--muted); font-size:0.88rem; margin-bottom:32px; line-height:1.5; }
+
+        .lbl { font-size:0.72rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:10px; display:block; }
+
+        .inp-group { position:relative; margin-bottom:20px; }
+        .inp-group select, .inp-group input { width:100%; padding:16px 18px; border:1.5px solid var(--border); border-radius:12px; font-size:0.95rem; font-family:'Inter',sans-serif; font-weight:500; background:var(--bg); color:var(--text); -webkit-appearance:none; appearance:none; transition:all 0.2s ease; }
+        .inp-group select:focus, .inp-group input:focus { outline:none; border-color:var(--primary); background:white; box-shadow:0 0 0 3px rgba(20,184,166,0.1); }
+        .inp-group.sel::after { content:'▾'; position:absolute; right:18px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; font-size:0.9rem; }
+
+        .login-btn { width:100%; padding:17px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border:none; border-radius:12px; font-size:1.05rem; font-weight:700; font-family:'Inter',sans-serif; cursor:pointer; margin-top:12px; box-shadow:0 8px 24px rgba(20,184,166,0.25); transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .login-btn:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(20,184,166,0.35); }
+        .login-btn:active { transform:translateY(0); box-shadow:0 4px 12px rgba(20,184,166,0.3); }
+        .admin-txt { text-align:center; font-size:0.85rem; color:var(--muted); margin:0; }
+        .admin-txt span { color:var(--primary); font-weight:600; cursor:pointer; text-decoration:none; transition:color 0.2s; }
+        .admin-txt span:hover { color:var(--secondary); text-decoration:underline; }
+
+        .app-header { background:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
+        .app-logo { font-family:'Inter',sans-serif; font-size:1.6rem; font-weight:900; letter-spacing:-1.5px; text-transform:uppercase; }
+        .app-logo span { color:var(--primary); }
+
+        .hbtns { display:flex; gap:8px; }
+        .hbtn { height:34px; border-radius:10px; border:none; font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; cursor:pointer; padding:0 13px; transition:all 0.2s; display:flex; align-items:center; gap:4px; }
+        .hbtn-back { background:var(--bg); color:var(--text); }
+        .hbtn-home { background:var(--primary); color:white; box-shadow:0 4px 12px rgba(20,184,166,0.25); transition:all 0.3s ease; }
+        .hbtn-home:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(20,184,166,0.35); }
+
+        .profile-card { background:white; padding:16px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--border); }
+        .avatar { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#FF3D00,#FF6E40); display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; color:white; font-family:'Inter',sans-serif; flex-shrink:0; border:3px solid rgba(20,184,166,0.15); cursor:pointer; position:relative; overflow:hidden; }
+        .avatar img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:50%; }
+        .avatar-edit { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.45); color:white; font-size:0.55rem; font-weight:700; text-align:center; padding:3px 0; font-family:'DM Sans',sans-serif; }
+        #photoInput { display:none; }
+        .profile-text h2 { font-size:1.1rem; font-weight:700; }
+        .profile-text p  { font-size:0.78rem; color:var(--muted); margin-top:2px; }
+
+        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:10px 16px; }
+        .stat-box { background:white; border-radius:12px; padding:8px 6px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        .stat-num { font-size:1.4rem; font-weight:700; font-family:'Inter',sans-serif; color:var(--primary); line-height:1; }
+        .stat-lbl { font-size:0.65rem; color:var(--muted); margin-top:2px; font-weight:500; }
+
+        .form-section { padding:12px 16px 0; }
+        .form-section-title { font-size:1rem; font-weight:700; margin-bottom:10px; }
+
+        .order-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+
+        .file-card { background:white; border-radius:16px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); min-height:280px; max-height:280px; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+        .card-lbl { font-size:0.68rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+
+        .upload-zone { border:2px dashed var(--border); border-radius:12px; padding:18px 8px; text-align:center; cursor:pointer; min-height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+        .upload-zone:active { border-color:var(--primary); }
+        .upload-zone input { display:none; }
+        .uz-icon { font-size:1.6rem; margin-bottom:4px; }
+        .upload-zone h5 { font-size:0.73rem; font-weight:700; }
+        .upload-zone p  { font-size:0.65rem; color:var(--muted); margin-top:2px; }
+
+        .file-chips { margin-top:8px; overflow-y:auto; flex:1; max-height:130px; }
+        .fc { display:flex; align-items:center; gap:5px; background:var(--bg); padding:5px 8px; border-radius:8px; margin-bottom:4px; max-width:100%; min-width:0; }
+        .fc span { font-size:0.68rem; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+        .fc-rm { font-size:0.72rem; color:var(--muted); cursor:pointer; flex-shrink:0; }
+
+        .form-card { background:white; border-radius:16px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:8px; }
+        .f-lbl { font-size:0.68rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+
+        .f-sel-w { position:relative; }
+        .f-sel-w::after { content:'▾'; position:absolute; right:9px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; font-size:0.8rem; }
+
+        .fi, .fs, .fta { width:100%; padding:9px 10px; border:2px solid var(--border); border-radius:10px; font-size:0.8rem; font-family:'DM Sans',sans-serif; color:var(--text); background:var(--bg); -webkit-appearance:none; appearance:none; }
+        .fi:focus, .fs:focus, .fta:focus { outline:none; border-color:var(--primary); background:white; }
+        .fta { min-height:62px; resize:none; }
+
+        .submit-btn { width:100%; padding:13px; margin-top:10px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border:none; border-radius:14px; font-size:0.95rem; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; box-shadow:0 6px 20px rgba(20,184,166,0.3); transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(20,184,166,0.4); }
+        .submit-btn:active { transform:translateY(0); animation:pulse 0.3s ease; }
+
+        .sec-title { padding:14px 16px 8px; font-size:1rem; font-weight:700; }
+
+        .order-row { background:white; margin:0 16px 10px; border-radius:14px; padding:13px 14px; display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); animation:slideInLeft 0.4s ease; }
+
+        .oti { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0; }
+        .oti-s { background:#FFF0EB; }
+
+        .order-mid h4 { font-size:0.86rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .order-mid p  { font-size:0.72rem; color:var(--muted); margin-top:2px; }
+
+        .sp { padding:4px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; transition:all 0.3s ease; }
+        .sp-grey       { background:#E0E0E0; color:#616161; }
+        .sp-pending    { background:#FFEBEE; color:#C62828; }
+        .sp-paused     { background:#FFF3E0; color:#EF6C00; }
+        .sp-processing { background:#E3F2FD; color:#1565C0; }
+        .sp-completed  { background:#E8F5E9; color:#2E7D32; }
+        .sp-uploaded   { background:#E8F5E9; color:#2E7D32; }
+
+        .empty-box { text-align:center; padding:30px 20px; color:var(--muted); }
+        .empty-box .ei { font-size:2.5rem; margin-bottom:8px; }
+        .empty-box h4 { color:var(--text); font-size:0.92rem; margin-bottom:4px; }
+        .empty-box p  { font-size:0.8rem; }
+
+        .photo-modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:999; flex-direction:column; align-items:center; justify-content:center; }
+        .photo-modal.open { display:flex; }
+        .photo-modal h4 { color:white; font-size:0.9rem; margin-bottom:12px; font-weight:600; }
+        .photo-crop-area { width:220px; height:220px; border-radius:50%; overflow:hidden; border:3px solid var(--primary); position:relative; cursor:grab; background:#222; touch-action:none; }
+        .photo-crop-area:active { cursor:grabbing; }
+        .photo-crop-area img { position:absolute; user-select:none; pointer-events:none; -webkit-user-drag:none; }
+        .photo-hint { color:rgba(255,255,255,0.6); font-size:0.78rem; margin-top:12px; }
+        .photo-modal-btns { display:flex; gap:12px; margin-top:20px; }
+        .pm-btn { padding:12px 28px; border-radius:12px; border:none; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
+        .pm-cancel { background:rgba(255,255,255,0.15); color:white; }
+        .pm-save   { background:var(--primary); color:white; box-shadow:0 4px 14px rgba(20,184,166,0.4); transition:all 0.3s ease; }
+        .pm-save:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(20,184,166,0.5); }
+
+        .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px); background:#1A1A1A; color:white; padding:12px 20px; border-radius:12px; font-size:0.84rem; font-weight:500; z-index:999; opacity:0; transition:all 0.3s ease; white-space:nowrap; max-width:90%; }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+        /* ADMIN STYLES */
+        .a-sidebar { width:240px; background:#1A1A1A; border-right:1px solid #333; min-height:100vh; display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:600; }
+        .a-sidebar-logo { padding:28px 24px 24px; border-bottom:1px solid #333; }
+        .a-sidebar-logo h1 { font-family:'Inter',sans-serif; font-size:1.8rem; font-weight:800; letter-spacing:-1px; color:#F0F0F0; }
+        .a-sidebar-logo h1 span { color:var(--primary); }
+        .a-sidebar-logo p { font-size:0.72rem; color:#888; margin-top:2px; }
+        .a-sidebar-nav { flex:1; padding:16px 12px; }
+        .a-nav-lbl { font-size:0.65rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; padding:8px 12px 6px; }
+        .a-nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:all 0.15s; margin-bottom:2px; color:#888; font-size:0.88rem; font-weight:500; border:none; background:transparent; width:100%; font-family:'DM Sans',sans-serif; text-align:left; }
+        .a-nav-item:hover { background:#242424; color:#F0F0F0; }
+        .a-nav-item.active { background:rgba(20,184,166,0.12); color:var(--primary); font-weight:600; }
+        .a-nav-icon { font-size:1rem; width:20px; text-align:center; }
+        .a-nav-badge { margin-left:auto; background:var(--primary); color:white; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:20px; }
+        .a-sidebar-bottom { padding:16px 12px; border-top:1px solid #333; }
+        .a-admin-info { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:#242424; margin-bottom:8px; }
+        .a-admin-av { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--secondary)); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:white; flex-shrink:0; }
+        .a-admin-info-text h4 { font-size:0.82rem; font-weight:600; color:#F0F0F0; }
+        .a-admin-info-text p  { font-size:0.7rem; color:#888; }
+        .a-logout-nav { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; color:#FF6B6B; font-size:0.85rem; font-weight:500; background:transparent; border:none; width:100%; font-family:'DM Sans',sans-serif; transition:background 0.15s; }
+        .a-logout-nav:hover { background:rgba(255,107,107,0.1); }
+        .a-main { margin-left:240px; flex:1; min-height:100vh; background:#0F0F0F; }
+        .a-topbar { background:#1A1A1A; border-bottom:1px solid #333; padding:16px 32px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:50; }
+        .a-topbar h2 { font-size:1.2rem; font-weight:700; color:#F0F0F0; }
+        .a-topbar p  { font-size:0.8rem; color:#888; margin-top:2px; }
+        .a-page { display:none; padding:28px 32px; }
+        .a-page.active { display:block; }
+        .a-table-card { background:#1A1A1A; border:1px solid #333; border-radius:16px; overflow:hidden; }
+        .a-table-hdr  { padding:18px 24px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; }
+        .a-table-hdr h3 { font-size:1rem; font-weight:700; color:#F0F0F0; }
+        .a-pills { display:flex; gap:6px; }
+        .a-pill { padding:6px 14px; border-radius:20px; font-size:0.78rem; font-weight:600; cursor:pointer; border:1.5px solid #333; background:transparent; color:#888; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+        .a-pill:hover { border-color:var(--primary); color:var(--primary); }
+        .a-pill.active { background:var(--primary); border-color:var(--primary); color:white; }
+        .a-table { width:100%; border-collapse:collapse; }
+        .a-table thead th { padding:12px 24px; text-align:left; font-size:0.72rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.8px; background:#242424; border-bottom:1px solid #333; }
+        .a-table tbody tr { border-bottom:1px solid #333; transition:background 0.15s; }
+        .a-table tbody tr:last-child { border-bottom:none; }
+        .a-table tbody tr:hover { background:#242424; }
+        .a-table tbody td { padding:14px 24px; font-size:0.85rem; color:#F0F0F0; }
+        .a-client-cell { display:flex; align-items:center; gap:10px; }
+        .a-client-av { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--secondary)); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:white; flex-shrink:0; }
+        .a-client-cell h4 { font-size:0.85rem; font-weight:600; color:#F0F0F0; }
+        .a-client-cell p  { font-size:0.72rem; color:#888; }
+        .a-type-badge { display:inline-flex; align-items:center; background:#242424; padding:4px 10px; border-radius:8px; font-size:0.78rem; font-weight:500; color:#F0F0F0; }
+        .a-sb { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; }
+        .a-sb-pending    { background:rgba(198,40,40,0.15); color:#C62828; }
+        .a-sb-paused     { background:rgba(255,152,0,0.15); color:#FF9800; }
+        .a-sb-processing { background:rgba(33,150,243,0.15); color:#2196F3; }
+        .a-sb-completed  { background:rgba(76,175,80,0.15);  color:#4CAF50; }
+        .a-sb-uploaded   { background:rgba(76,175,80,0.15);  color:#4CAF50; }
+        .a-sd { width:7px; height:7px; border-radius:50%; flex-shrink:0; display:inline-block; }
+        .a-sd-pending    { background:#C62828; }
+        .a-sd-paused     { background:#FF9800; }
+        .a-sd-processing { background:#2196F3; }
+        .a-sd-completed  { background:#4CAF50; }
+        .a-sd-uploaded   { background:#4CAF50; }
+        .a-action-btn { padding:6px 14px; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+        .a-btn-start { background:rgba(20,184,166,0.12); color:var(--primary); border:1px solid rgba(20,184,166,0.2); }
+        .a-btn-start:hover { background:rgba(20,184,166,0.2); }
+        .a-clients-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+        .a-client-card { background:#1A1A1A; border:1px solid #333; border-radius:16px; padding:22px; transition:border 0.2s; }
+        .a-client-card:hover { border-color:rgba(20,184,166,0.4); transform:translateY(-2px); transition:all 0.3s ease; }
+        .a-cc-top { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+        .a-cc-av { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--secondary)); display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700; color:white; font-family:'Inter',sans-serif; flex-shrink:0; }
+        .a-cc-info h4 { font-size:0.95rem; font-weight:700; color:#F0F0F0; }
+        .a-cc-info p  { font-size:0.78rem; color:#888; margin-top:2px; }
+        .a-cc-btn { flex:1; padding:8px; border-radius:9px; border:none; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.15s; text-align:center; }
+        .a-cc-pwd { background:#242424; color:#F0F0F0; border:1px solid #333; }
+        .a-cc-pwd:hover { border-color:#FF3D00; color:#FF3D00; }
+        .a-cc-del { background:rgba(255,107,107,0.1); color:#FF6B6B; border:1px solid rgba(255,107,107,0.2); }
+        .a-cc-del:hover { background:rgba(255,107,107,0.2); }
+        .a-add-card { background:#1A1A1A; border:1px solid #333; border-radius:16px; padding:24px; margin-bottom:24px; }
+        .a-add-card h3 { font-size:1rem; font-weight:700; color:#F0F0F0; margin-bottom:18px; }
+        .a-form-row { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; align-items:end; }
+        .a-form-grp label { display:block; font-size:0.72rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:7px; }
+        .a-form-grp input { width:100%; padding:11px 14px; background:#242424; border:1.5px solid #333; border-radius:10px; color:#F0F0F0; font-size:0.88rem; font-family:'DM Sans',sans-serif; transition:border 0.2s; }
+        .a-form-grp input:focus { outline:none; border-color:#FF3D00; }
+        .a-add-btn { padding:11px 22px; background:linear-gradient(135deg,#FF3D00,#FF6E40); color:white; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(255,61,0,0.3); white-space:nowrap; height:42px; }
+        .a-modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:700; align-items:center; justify-content:center; }
+        .a-modal.open { display:flex; }
+        .a-modal-box { background:#1A1A1A; border:1px solid #333; border-radius:20px; padding:32px; width:420px; box-shadow:0 40px 80px rgba(0,0,0,0.5); }
+        .a-modal-box h3 { font-size:1.1rem; font-weight:700; color:#F0F0F0; margin-bottom:20px; }
+        .a-modal-sub { color:#888; font-size:0.85rem; margin-bottom:16px; }
+        .a-modal-input { width:100%; padding:13px 16px; background:#242424; border:1.5px solid #333; border-radius:12px; color:#F0F0F0; font-size:0.92rem; font-family:'DM Sans',sans-serif; margin-bottom:16px; }
+        .a-modal-input:focus { outline:none; border-color:#FF3D00; }
+        .a-modal-btns { display:flex; gap:10px; justify-content:flex-end; }
+        .a-modal-cancel { padding:10px 20px; background:#242424; border:1px solid #333; border-radius:10px; color:#F0F0F0; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; }
+        .a-modal-save   { padding:10px 20px; background:#FF3D00; border:none; border-radius:10px; color:white; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; }
+        .a-empty { text-align:center; padding:60px 20px; color:#888; }
+        .a-empty .ei { font-size:3rem; margin-bottom:12px; }
+        .a-empty h4 { color:#F0F0F0; font-size:1rem; margin-bottom:6px; }
+
+        .a-login-box { background:#1A1A1A; border:1px solid #333; border-radius:24px; padding:48px; width:420px; position:relative; z-index:1; box-shadow:0 40px 80px rgba(0,0,0,0.6); }
+        .a-login-logo { font-family:'Inter',sans-serif; font-size:2.4rem; font-weight:800; letter-spacing:-1.5px; color:#F0F0F0; margin-bottom:8px; }
+        .a-login-logo span { color:var(--primary); }
+        .a-login-sub { color:#888; font-size:0.9rem; margin-bottom:36px; }
+        .a-field { margin-bottom:18px; }
+        .a-field label { display:block; font-size:0.75rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; }
+        .a-field input { width:100%; padding:14px 16px; background:#242424; border:1.5px solid #333; border-radius:12px; color:#F0F0F0; font-size:0.95rem; font-family:'DM Sans',sans-serif; transition:border 0.2s; }
+        .a-field input:focus { outline:none; border-color:var(--primary); }
+        .a-submit { width:100%; padding:15px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border:none; border-radius:12px; font-size:1rem; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; margin-top:8px; box-shadow:0 8px 24px rgba(20,184,166,0.35); transition:all 0.3s ease; }
+        .a-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(20,184,166,0.45); }
+        .a-back-link { text-align:center; margin-top:16px; font-size:0.88rem; color:#888; cursor:pointer; }
+        .a-back-link span { color:var(--primary); font-weight:600; }
+        .a-err { color:#FF6B6B; font-size:0.85rem; margin-top:12px; text-align:center; display:none; }
+    </style>
+
+    <!-- ✅ Supabase SDK (replaces Firebase) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- ===== LOGIN ===== -->
+    <div id="loginScreen">
+        <div class="login-hero">
+            <div class="login-logo">Ad<span>Case</span></div>
+            <p class="login-tagline">Built to Help. Driven by Trust.</p>
+        </div>
+        <div class="login-body">
+            <h2>Welcome Back</h2>
+            <p class="sub">Sign in to access your dashboard and manage your design projects.</p>
+            <label class="lbl">Client Name</label>
+            <div class="inp-group sel">
+                <select id="clientSelect">
+                    <option value="">Select your name...</option>
+                    <option value="0">Vijay Bachate</option>
+                    <option value="1">Mahaling Mali</option>
+                    <option value="2">Ganesh Patil</option>
+                    <option value="3">Darshan Patil</option>
+                    <option value="4">Gayatri Sagare</option>
+                    <option value="5">Pooja Bachate</option>
+                    <option value="6">Rushi Patil</option>
+                    <option value="7">Sharad Shinde</option>
+                    <option value="8">Aman Bhosale</option>
+                    <option value="9">Swagat Mali</option>
+                    <option value="10">Chetan Hubale</option>
+                    <option value="11">Akshay Phulare</option>
+                    <option value="12">Vaibhav Chavan</option>
+                    <option value="13">Prashant Honmane</option>
+                    <option value="14">Bansi Honmane</option>
+                    <option value="15">Shankar Jadhav</option>
+                    <option value="16">Pradip Arbune</option>
+                    <option value="17">Sushant Hubale</option>
+                </select>
+            </div>
+            <label class="lbl">Password</label>
+            <div class="inp-group">
+                <input type="password" id="clientPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') doLogin()">
+            </div>
+            <button class="login-btn" onclick="doLogin()">Sign In</button>
+            <p style="text-align:center;margin-top:16px;font-size:0.8rem;color:var(--muted);font-weight:500;">Need help? <span style="color:var(--primary);cursor:pointer;">Contact Support</span></p>
+            <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);text-align:center;">
+                <p style="font-size:0.85rem;color:var(--muted);">Administrator Access</p>
+                <p class="admin-txt" style="margin-top:6px;"><span onclick="showAdminLogin()">Admin Login</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== HOME ===== -->
+    <div id="homeScreen" style="display:none;">
+        <div class="app-header">
+            <div class="app-logo">Ad<span>Case</span></div>
+            <div class="hbtns">
+                <button class="hbtn hbtn-back" onclick="goBack()">‹ Back</button>
+                <button class="hbtn hbtn-back" onclick="goBack()">Logout</button>
+            </div>
+        </div>
+        <div class="profile-card">
+            <div class="avatar" id="avatarEl" onclick="document.getElementById('photoInput').click()">
+                <input type="file" id="photoInput" accept="image/*" onchange="uploadPhoto(this)">
+                <span id="avatarLetter">?</span>
+                <div class="avatar-edit">EDIT</div>
+            </div>
+            <div class="profile-text">
+                <h2 id="nameEl">Welcome!</h2>
+                <p id="emailEl">-</p>
+            </div>
+        </div>
+        <div class="form-section">
+            <div class="order-cols">
+                <!-- LEFT: File Upload -->
+                <div class="file-card">
+                    <div class="card-lbl">Upload Files</div>
+                    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.pdf,.ai,.psd,.indd,.bmp,.tiff,.tif,.eps,.mp4,.mov,.avi,.mkv,.webm" onchange="handleFiles(this.files)">
+                        <div class="uz-icon">📎</div>
+                        <h5>Tap to upload</h5>
+                        <p>JPG, PNG, PDF, AI<br>PSD, INDD, BMP<br>TIFF, EPS, Video</p>
+                    </div>
+                    <div class="file-chips" id="fileList"></div>
+                </div>
+                <!-- RIGHT: Form -->
+                <div class="form-card">
+                    <div>
+                        <div class="f-lbl">Project Type</div>
+                        <div class="f-sel-w">
+                            <select class="fs" id="projType">
+                                <option value="">Select...</option>
+                                <option>Instagram Post</option>
+                                <option>Instagram Story</option>
+                                <option>Instagram Reel</option>
+                                <option>Facebook Post</option>
+                                <option>Facebook Cover</option>
+                                <option>LinkedIn Post</option>
+                                <option>YouTube Thumbnail</option>
+                                <option>Twitter/X Post</option>
+                                <option>Flyer Design</option>
+                                <option>Brochure Design</option>
+                                <option>Poster Design</option>
+                                <option>Business Card</option>
+                                <option>Email Newsletter</option>
+                                <option>Presentation Deck</option>
+                                <option>Packaging Design</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="f-lbl">Headline</div>
+                        <input type="text" class="fi" id="projHeadline" placeholder="Ad headline or title...">
+                    </div>
+                    <div>
+                        <div class="f-lbl">INSTRUCTION/AD COPY</div>
+                        <textarea class="fta" id="projDesc" placeholder="Your requirements, ad copy, or instructions..."></textarea>
+                    </div>
+                    <div>
+                        <div class="f-lbl">Deadline</div>
+                        <input type="date" class="fi" id="projDeadline">
+                    </div>
+                </div>
+            </div>
+            <button class="submit-btn" onclick="submitOrder()">Submit Order ✦</button>
+        </div>
+        <div class="sec-title">Active Orders</div>
+        <div id="ordersList"></div>
+        <button onclick="showPastOrders()" style="width:auto;margin:16px 20px;padding:8px 16px;background:#F5F5F7;color:#666;border:1.5px solid #E0E0E0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">
+            📦 Past Orders
+        </button>
+    </div>
+
+    <!-- Send Back Modal -->
+    <div id="sendBackModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:600;align-items:center;justify-content:center;overflow-y:auto;">
+        <div style="background:white;border-radius:20px;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);margin:20px;animation:slideUp 0.4s ease;">
+            <div style="padding:20px;border-bottom:1.5px solid #E0E0E0;display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="font-size:1.1rem;font-weight:700;color:#1A1A1A;margin:0;">↩ Send Back for Changes</h3>
+                <button onclick="closeSendBack()" style="background:rgba(0,0,0,0.05);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.3rem;line-height:1;color:#666;">×</button>
+            </div>
+            <div style="padding:20px;">
+                <p style="margin:0 0 12px 0;color:#666;font-size:0.85rem;" id="sendBackOrderInfo">Order #A101</p>
+                <label style="display:block;color:#1A1A1A;font-size:0.88rem;font-weight:600;margin-bottom:8px;">What changes do you need?</label>
+                <textarea id="sendBackNote" placeholder="Explain what needs to be changed..." style="width:100%;min-height:100px;padding:12px;border:1.5px solid #E0E0E0;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;resize:vertical;outline:none;"></textarea>
+                <div style="display:flex;gap:10px;margin-top:16px;">
+                    <button onclick="closeSendBack()" style="flex:1;padding:12px;background:#F5F5F7;color:#666;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">Cancel</button>
+                    <button onclick="confirmSendBack()" style="flex:1;padding:12px;background:#FF9800;color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">Send Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Modal -->
+    <div class="photo-modal" id="photoModal">
+        <h4>Drag to adjust position</h4>
+        <div class="photo-crop-area" id="cropArea">
+            <img id="cropImg" src="" draggable="false">
+        </div>
+        <p class="photo-hint">👆 Drag photo to reposition</p>
+        <div class="photo-modal-btns">
+            <button class="pm-btn pm-cancel" onclick="cancelPhoto()">Cancel</button>
+            <button class="pm-btn pm-save"   onclick="savePhoto()">Save ✓</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toastEl"></div>
+
+    <!-- ===== ADMIN LOGIN ===== -->
+    <div id="adminLoginScreen" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:#0F0F0F;align-items:center;justify-content:center;">
+        <div style="position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(20,184,166,0.12) 0%,transparent 70%);pointer-events:none;"></div>
+        <div class="a-login-box">
+            <div class="a-login-logo">Ad<span>Case</span></div>
+            <p class="a-login-sub">Admin Dashboard — Sign in to continue</p>
+            <div class="a-field">
+                <label>Email</label>
+                <input type="email" id="aEmail" value="admin@adcase.com" placeholder="admin@adcase.com">
+            </div>
+            <div class="a-field">
+                <label>Password</label>
+                <input type="password" id="aPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter') aLogin()">
+            </div>
+            <button class="a-submit" onclick="aLogin()">Sign In →</button>
+            <p class="a-err" id="aErr">❌ Wrong email or password!</p>
+            <p class="a-back-link" onclick="hideAdminLogin()">← <span>Back to Client Login</span></p>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN APP ===== -->
+    <div id="adminApp" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;overflow-y:auto;background:#0F0F0F;">
+        <div class="a-sidebar">
+            <div class="a-sidebar-logo">
+                <h1>Ad<span>Case</span></h1>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="a-sidebar-nav">
+                <div class="a-nav-lbl">Main</div>
+                <button class="a-nav-item active" onclick="aShowPage('aOrders',this)">
+                    <span class="a-nav-icon">📋</span> All Orders
+                    <span class="a-nav-badge" id="aPendingBadge">0</span>
+                </button>
+                <button class="a-nav-item" onclick="aShowPage('aPastOrders',this)">
+                    <span class="a-nav-icon">📦</span> Past Orders
+                </button>
+                <div class="a-nav-lbl" style="margin-top:12px;">Management</div>
+                <button class="a-nav-item" onclick="aShowPage('aClients',this)">
+                    <span class="a-nav-icon">👥</span> Clients
+                </button>
+            </nav>
+            <div class="a-sidebar-bottom">
+                <div class="a-admin-info">
+                    <div class="a-admin-av">A</div>
+                    <div class="a-admin-info-text">
+                        <h4>Admin</h4>
+                        <p>admin@adcase.com</p>
+                    </div>
+                </div>
+                <button class="a-logout-nav" onclick="aLogout()">🚪 Logout</button>
+            </div>
+        </div>
+        <div class="a-main">
+            <div class="a-topbar">
+                <div>
+                    <h2 id="aPageTitle">All Orders</h2>
+                    <p id="aPageSub">Manage and update order status</p>
+                </div>
+            </div>
+            <!-- All Orders -->
+            <div class="a-page active" id="aOrders">
+                <div class="a-table-card">
+                    <div class="a-table-hdr">
+                        <h3>All Orders</h3>
+                        <div class="a-pills">
+                            <button class="a-pill active" onclick="aFilter('all',this)">All</button>
+                            <button class="a-pill" onclick="aFilter('pending',this)">Pending</button>
+                            <button class="a-pill" onclick="aFilter('processing',this)">In Progress</button>
+                            <button class="a-pill" onclick="aFilter('completed',this)">Completed</button>
+                        </div>
+                    </div>
+                    <table class="a-table">
+                        <thead><tr><th>Order #</th><th>NEW/REVISION</th><th>Client</th><th>Order Placed Date</th><th>Type</th><th>INSTRUCTION/AD COPY</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="aOrdersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Past Orders -->
+            <div class="a-page" id="aPastOrders">
+                <div class="a-table-card">
+                    <div class="a-table-hdr">
+                        <h3>📦 Past Orders</h3>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <div style="display:flex;align-items:center;gap:8px;background:#242424;border:1.5px solid #333;border-radius:10px;padding:6px 12px;">
+                                <span style="color:#888;">🔍</span>
+                                <input type="text" id="aPastOrderSearch" placeholder="Search #A101 or client..." oninput="aTogglePastClearButton()" style="background:transparent;border:none;outline:none;color:#F0F0F0;font-family:'DM Sans',sans-serif;font-size:0.78rem;width:170px;">
+                                <button id="aPastClearSearch" onclick="aClearPastSearch()" style="display:none;background:rgba(255,61,0,0.12);color:#FF3D00;border:none;padding:4px 8px;border-radius:6px;font-size:0.7rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">✕</button>
+                                <button onclick="aPastOrderSearchFn()" style="background:rgba(255,61,0,0.12);color:#FF3D00;border:none;padding:4px 10px;border-radius:6px;font-size:0.7rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Search</button>
+                            </div>
+                            <select id="aPastOrderClientFilter" onchange="aRenderPastOrders()" style="padding:6px 30px 6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;border:1.5px solid #333;background:#242424;color:#F0F0F0;font-family:'DM Sans',sans-serif;appearance:none;background-image:url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%277%27%3e%3cpath fill=%27%23888%27 d=%27M0 0l6 7 6-7z%27/%3e%3c/svg%3e');background-repeat:no-repeat;background-position:right 10px center;cursor:pointer;">
+                                <option value="">All Clients</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table class="a-table">
+                        <thead><tr><th>Order #</th><th>Client</th><th>Type</th><th>Placed</th><th>Completed</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="aPastOrdersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Clients -->
+            <div class="a-page" id="aClients">
+                <div class="a-add-card">
+                    <h3>➕ Add New Client</h3>
+                    <div class="a-form-row">
+                        <div class="a-form-grp"><label>Full Name *</label><input type="text" id="aNewName" placeholder="Client name"></div>
+                        <div style="display:flex;gap:12px;">
+                            <div class="a-form-grp" style="flex:1;"><label>Email</label><input type="email" id="aNewEmail" placeholder="email@example.com"></div>
+                            <div class="a-form-grp" style="flex:1;"><label>Contact Number</label><input type="tel" id="aNewPhone" placeholder="9876543210"></div>
+                        </div>
+                        <div class="a-form-grp" style="width:50%;"><label>Password *</label><input type="text" id="aNewPwd" placeholder="Set password"></div>
+                        <button class="a-add-btn" onclick="aAddClient()">Add Client</button>
+                    </div>
+                    <p style="font-size:0.8rem;color:#888;margin-top:8px;">* Required. Email or Contact Number is mandatory.</p>
+                </div>
+                <div class="a-clients-grid" id="aClientsGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Password Modal -->
+    <div class="a-modal" id="aPwdModal">
+        <div class="a-modal-box">
+            <h3>🔑 Change Password</h3>
+            <p class="a-modal-sub" id="aPwdModalName">Client name</p>
+            <input type="text" class="a-modal-input" id="aNewPwdInput" placeholder="Enter new password">
+            <div class="a-modal-btns">
+                <button class="a-modal-cancel" onclick="aClosePwd()">Cancel</button>
+                <button class="a-modal-save" onclick="aSavePwd()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Orders Modal (Client side) -->
+    <div id="pastOrdersModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:600;overflow-y:auto;">
+        <div style="min-height:100vh;padding:20px;display:flex;align-items:flex-start;justify-content:center;">
+            <div style="background:white;border-radius:20px;width:100%;max-width:500px;margin-top:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div style="padding:20px;border-bottom:1.5px solid #E0E0E0;display:flex;justify-content:space-between;align-items:center;">
+                    <h3 style="font-size:1.2rem;font-weight:700;color:#1A1A1A;margin:0;">📦 Past Orders</h3>
+                    <button onclick="closePastOrders()" style="background:rgba(0,0,0,0.05);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.3rem;line-height:1;color:#666;">×</button>
+                </div>
+                <div id="pastOrdersList" style="padding:20px;max-height:60vh;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================
+    // ✅ SUPABASE CONFIGURATION
+    // ⚠️  तुमचा Supabase URL आणि Anon Key इथे टाका
+    // ============================================================
+    var SUPABASE_URL  = 'https://oguueuvowwkkwamvxvrs.supabase.co';   // e.g. https://xxxx.supabase.co
+    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ndXVldXZvd3dra3dhbXZ4dnJzIiwicm9sZSI6ImFub24iLCJpYXQiOj'; // Project Settings > API
+
+    var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    console.log('✅ Supabase client initialized');
+
+    // ============================================================
+    // APP STATE
+    // ============================================================
+    var orders       = [];
+    var orderCounter = 101;
+    var currentUser  = null;
+    var selectedFiles = [];
+    var realtimeChannel = null;
+
+    var clients = [
+        { email:'vijay.bachate@gmail.com',    password:'1', name:'Vijay Bachate' },
+        { email:'mahaling.mali@gmail.com',    password:'1', name:'Mahaling Mali' },
+        { email:'ganesh.patil@gmail.com',     password:'1', name:'Ganesh Patil' },
+        { email:'darshan.patil@gmail.com',    password:'1', name:'Darshan Patil' },
+        { email:'gayatri.sagare@gmail.com',   password:'1', name:'Gayatri Sagare' },
+        { email:'pooja.bachate@gmail.com',    password:'1', name:'Pooja Bachate' },
+        { email:'rushi.patil@gmail.com',      password:'1', name:'Rushi Patil' },
+        { email:'sharad.shinde@gmail.com',    password:'1', name:'Sharad Shinde' },
+        { email:'aman.bhosale@gmail.com',     password:'1', name:'Aman Bhosale' },
+        { email:'swagat.mali@gmail.com',      password:'1', name:'Swagat Mali' },
+        { email:'chetan.hubale@gmail.com',    password:'1', name:'Chetan Hubale' },
+        { email:'akshay.phulare@gmail.com',   password:'1', name:'Akshay Phulare' },
+        { email:'vaibhav.chavan@gmail.com',   password:'1', name:'Vaibhav Chavan' },
+        { email:'prashant.honmane@gmail.com', password:'1', name:'Prashant Honmane' },
+        { email:'bansi.honmane@gmail.com',    password:'1', name:'Bansi Honmane' },
+        { email:'shankar.jadhav@gmail.com',   password:'1', name:'Shankar Jadhav' },
+        { email:'pradip.arbune@gmail.com',    password:'1', name:'Pradip Arbune' },
+        { email:'sushant.hubale@gmail.com',   password:'1', name:'Sushant Hubale' }
+    ];
+
+    var icons = {
+        'Instagram Post':'📸','Instagram Story':'📱','Instagram Reel':'🎬',
+        'Facebook Post':'📘','Facebook Cover':'🖼️','LinkedIn Post':'💼',
+        'YouTube Thumbnail':'▶️','Twitter/X Post':'🐦',
+        'Flyer Design':'📄','Brochure Design':'📰',
+        'Poster Design':'🎨','Business Card':'🪪','Packaging Design':'📦',
+        'Email Newsletter':'📧','Presentation Deck':'📊','Other':'✦'
+    };
+
+    // ============================================================
+    // ROW MAPPER — Supabase row → JS object
+    // ============================================================
+    function rowToOrder(row) {
+        return {
+            dbId:          row.id,           // Supabase UUID primary key
+            id:            row.order_id,     // Display ID like 'A101'
+            email:         row.client_email,
+            type:          row.type,
+            headline:      row.headline || '',
+            desc:          row.description || '',
+            deadline:      row.deadline || '',
+            files:         row.files || [],
+            status:        row.status,
+            date:          row.placed_date || '',
+            completedDate: row.completed_date || null,
+            isRevision:    row.is_revision || false,
+            adminOutput:   row.admin_output || null,
+            clientNote:    row.client_note || null,
+            revisionFiles: row.revision_files || []
+        };
+    }
+
+    // ============================================================
+    // LOAD ALL ORDERS FROM SUPABASE
+    // ============================================================
+    async function loadAllOrders() {
+        var res = await sb.from('orders').select('*').order('placed_date', { ascending: true });
+        if (res.error) {
+            console.error('❌ Supabase fetch error:', res.error);
+            showToast('⚠️ Could not load orders');
+            return;
+        }
+        orders = res.data.map(rowToOrder);
+
+        // Update order counter from highest existing number
+        var max = 100;
+        orders.forEach(function(o) {
+            var n = parseInt((o.id || 'A0').replace('A', ''));
+            if (n > max) max = n;
+        });
+        orderCounter = max + 1;
+
+        console.log('✅ Loaded', orders.length, 'orders from Supabase');
+        updateUI();
+    }
+
+    // Update all UI panels after data changes
+    function updateUI() {
+        if (currentUser) {
+            renderOrders();
+        }
+        if (document.getElementById('adminApp').style.display !== 'none') {
+            aRefresh();
+            aRenderOrders();
+        }
+    }
+
+    // ============================================================
+    // REALTIME SUBSCRIPTION
+    // ============================================================
+    function setupRealtimeOrders() {
+        if (realtimeChannel) {
+            sb.removeChannel(realtimeChannel);
+        }
+        realtimeChannel = sb.channel('orders-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' },
+                function(payload) {
+                    console.log('🔄 Realtime update:', payload.eventType);
+                    loadAllOrders();
+                }
+            )
+            .subscribe(function(status) {
+                console.log('📡 Realtime status:', status);
+            });
+    }
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
+    function doLogin() {
+        var idx = document.getElementById('clientSelect').value;
+        var pwd = document.getElementById('clientPassword').value;
+        if (idx === '') { showToast('Please select your name'); return; }
+        if (pwd === '')  { showToast('Please enter password'); return; }
+        var c = clients[parseInt(idx)];
+        if (c.password === pwd) {
+            currentUser = { name: c.name, email: c.email };
+            showHome();
+        } else {
+            showToast('Wrong password! 🔐');
+        }
+    }
+
+    function showHome() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('homeScreen').style.display  = 'block';
+        document.getElementById('avatarLetter').textContent  = currentUser.name.charAt(0);
+        document.getElementById('nameEl').textContent  = 'Welcome, ' + currentUser.name.split(' ')[0] + '! 👋';
+        document.getElementById('emailEl').textContent = currentUser.email;
+        var today = new Date().toISOString().split('T')[0];
+        document.getElementById('projDeadline').value = today;
+        document.getElementById('projDeadline').min   = today;
+        loadAllOrders();
+        setupRealtimeOrders();
+        window.scrollTo(0, 0);
+    }
+
+    function goBack() {
+        currentUser   = null;
+        selectedFiles = [];
+        document.getElementById('clientSelect').value   = '';
+        document.getElementById('clientPassword').value = '';
+        document.getElementById('fileList').innerHTML   = '';
+        document.getElementById('projType').value    = '';
+        document.getElementById('projDesc').value    = '';
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('homeScreen').style.display  = 'none';
+        window.scrollTo(0, 0);
+    }
+
+    // ============================================================
+    // RENDER ACTIVE ORDERS (Client)
+    // ============================================================
+    function renderOrders() {
+        var c    = document.getElementById('ordersList');
+        var mine = orders.filter(function(o) {
+            return o.email === currentUser.email && o.status !== 'done';
+        });
+        if (!mine.length) {
+            c.innerHTML = '<div class="empty-box"><div class="ei">🎨</div><h4>No orders yet</h4><p>Submit your first order above!</p></div>';
+            return;
+        }
+        var html = '';
+        mine.forEach(function(o) {
+            var ico = icons[o.type] || '✦';
+            var lbl = '', statusClass = '';
+            if (o.status === 'pending')    { lbl = o.isRevision ? 'Revision Placed' : 'Order Placed'; statusClass = 'sp-grey'; }
+            else if (o.status === 'processing') { lbl = 'In Progress';  statusClass = 'sp-processing'; }
+            else if (o.status === 'paused')     { lbl = 'Paused';       statusClass = 'sp-paused'; }
+            else if (o.status === 'completed')  { lbl = 'Completed';    statusClass = 'sp-completed'; }
+            var downloadBtn = '';
+            if (o.status === 'completed' && o.adminOutput) {
+                var fc = Array.isArray(o.adminOutput) ? o.adminOutput.length : 1;
+                downloadBtn = '<button onclick="downloadOutput(\'' + o.id + '\')" style="margin-left:8px;padding:4px 10px;background:#2E7D32;color:white;border:none;border-radius:8px;font-size:0.7rem;font-weight:600;cursor:pointer;">⬇ Download' + (fc > 1 ? ' (' + fc + ')' : '') + '</button>'
+                            + '<button onclick="openSendBack(\'' + o.id + '\')" style="margin-left:4px;padding:4px 10px;background:#FF9800;color:white;border:none;border-radius:8px;font-size:0.7rem;font-weight:600;cursor:pointer;">↩ Send back</button>';
+            }
+            html += '<div class="order-row">'
+                  + '<div class="oti oti-s">' + ico + '</div>'
+                  + '<div class="order-mid">'
+                  + '<h4 style="font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:2px;">Order Number #' + o.id + '</h4>'
+                  + '<p style="font-size:0.95rem;font-weight:600;color:#1A1A1A;margin-bottom:4px;">' + o.type + '</p>'
+                  + '<p style="font-size:0.8rem;color:var(--muted);">Placed: ' + o.date + '</p>'
+                  + (o.deadline ? '<p style="font-size:0.8rem;color:var(--muted);margin-top:2px;">Deadline: ' + o.deadline + '</p>' : '')
+                  + (o.adminNote ? '<div style="background:#FFF3E0;border-left:3px solid #FF9800;padding:8px;margin-top:8px;border-radius:6px;"><p style="font-size:0.75rem;font-weight:700;color:#EF6C00;margin:0 0 4px 0;">⚠️ Admin Note:</p><p style="font-size:0.8rem;color:#666;margin:0;">' + o.adminNote + '</p></div>' : '')
+                  + '</div>'
+                  + '<span class="sp ' + statusClass + '">' + lbl + '</span>'
+                  + downloadBtn
+                  + '</div>';
+        });
+        c.innerHTML = html;
+    }
+
+    // ============================================================
+    // SUBMIT ORDER → Supabase insert
+    // ============================================================
+    async function submitOrder() {
+        var type     = document.getElementById('projType').value;
+        var headline = document.getElementById('projHeadline').value.trim();
+        var desc     = document.getElementById('projDesc').value.trim();
+        var deadline = document.getElementById('projDeadline').value;
+        if (!type) { showToast('Select project type'); return; }
+
+        // ✅ 5 orders per day limit (per client)
+        var today = new Date().toISOString().split('T')[0];
+        var todayOrders = orders.filter(function(o) {
+            return o.email === currentUser.email && o.date === today;
+        });
+        if (todayOrders.length >= 5) {
+            showToast('⚠️ Daily limit reached (5 orders/day)');
+            return;
+        }
+
+        var orderId = 'A' + orderCounter;
+        orderCounter++;
+
+        var newRow = {
+            order_id:      orderId,
+            client_email:  currentUser.email,
+            type:          type,
+            headline:      headline || '',
+            description:   desc || 'No description',
+            deadline:      deadline || 'No deadline',
+            files:         selectedFiles.map(function(f) { return { name:f.name, size:f.size }; }),
+            status:        'pending',
+            placed_date:   today,
+            is_revision:   false,
+            admin_output:  null,
+            client_note:   null,
+            revision_files: [],
+            completed_date: null
+        };
+
+        var res = await sb.from('orders').insert(newRow);
+        if (res.error) {
+            console.error('❌ Insert error:', res.error);
+            showToast('⚠️ Error submitting order. Try again.');
+            return;
+        }
+        showToast('Order submitted! 🎉');
+        clearOrderForm();
+        // Realtime listener will auto-refresh orders
+    }
+
+    function clearOrderForm() {
+        selectedFiles = [];
+        document.getElementById('fileList').innerHTML = '';
+        var addBtn = document.getElementById('addMoreFilesBtn');
+        if (addBtn) addBtn.remove();
+        document.getElementById('projType').value     = '';
+        document.getElementById('projHeadline').value = '';
+        document.getElementById('projDesc').value     = '';
+    }
+
+    // ============================================================
+    // SEND BACK → Supabase update
+    // ============================================================
+    var sendBackTargetId = null;
+
+    function openSendBack(orderId) {
+        sendBackTargetId = orderId;
+        var o = orders.find(function(x) { return x.id === orderId; });
+        document.getElementById('sendBackOrderInfo').textContent = 'Order #' + orderId + ' - ' + (o ? o.type : '');
+        document.getElementById('sendBackNote').value = '';
+        document.getElementById('sendBackModal').style.display = 'flex';
+    }
+
+    function closeSendBack() {
+        document.getElementById('sendBackModal').style.display = 'none';
+        sendBackTargetId = null;
+    }
+
+    async function confirmSendBack() {
+        var note = document.getElementById('sendBackNote').value.trim();
+        if (!note) { showToast('⚠️ Please explain what changes you need'); return; }
+        var o = orders.find(function(x) { return x.id === sendBackTargetId; });
+        if (!o) return;
+        var res = await sb.from('orders').update({
+            status:         'pending',
+            is_revision:    true,
+            client_note:    note,
+            admin_output:   null,
+            completed_date: null
+        }).eq('id', o.dbId);
+        if (res.error) { console.error('❌', res.error); showToast('⚠️ Error'); return; }
+        showToast('↩ Order sent back for changes');
+        closeSendBack();
+    }
+
+    // ============================================================
+    // PAST ORDERS (Client)
+    // ============================================================
+    function showPastOrders() {
+        var pastOrders = orders.filter(function(o) {
+            return o.email === currentUser.email && o.status === 'done';
+        });
+        var container = document.getElementById('pastOrdersList');
+        if (!pastOrders.length) {
+            container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#888;"><div style="font-size:3rem;margin-bottom:12px;">📦</div><h4 style="color:#1A1A1A;margin-bottom:6px;">No past orders</h4><p>Completed orders will appear here</p></div>';
+        } else {
+            var html = '';
+            pastOrders.slice().reverse().forEach(function(o) {
+                var ico = icons[o.type] || '✦';
+                html += '<div style="background:#F5F5F7;border-radius:12px;padding:16px;margin-bottom:12px;">';
+                html += '<div style="display:flex;gap:12px;align-items:flex-start;">';
+                html += '<div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#1A1A1A,#FF3D00);color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">' + ico + '</div>';
+                html += '<div style="flex:1;min-width:0;"><h4 style="font-size:0.75rem;color:#888;margin:0 0 4px 0;">Order #' + o.id + '</h4>';
+                html += '<p style="font-size:1rem;font-weight:600;color:#1A1A1A;margin:0 0 8px 0;">' + o.type + '</p>';
+                html += '<div style="display:inline-block;background:rgba(76,175,80,0.15);color:#4CAF50;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;margin-bottom:8px;">✓ Done</div>';
+                html += '<div style="font-size:0.8rem;color:#666;"><div>Placed: ' + o.date + '</div>';
+                if (o.completedDate) html += '<div>Completed: ' + o.completedDate + '</div>';
+                html += '</div></div></div></div>';
+            });
+            container.innerHTML = html;
+        }
+        document.getElementById('pastOrdersModal').style.display = 'block';
+    }
+
+    function closePastOrders() { document.getElementById('pastOrdersModal').style.display = 'none'; }
+
+    function downloadOutput(orderId) {
+        var o = orders.find(function(x) { return x.id === orderId; });
+        if (o && o.adminOutput) {
+            var fc = Array.isArray(o.adminOutput) ? o.adminOutput.length : 1;
+            showToast('📎 ' + fc + ' file(s) — contact admin to download');
+        }
+    }
+
+    // ============================================================
+    // FILE HANDLING
+    // ============================================================
+    function handleFiles(files) {
+        var newFiles = Array.from(files).slice(0, 10);
+        var totalSize = 0;
+        selectedFiles.forEach(function(f) { totalSize += f.size; });
+        newFiles.forEach(function(f) { totalSize += f.size; });
+        if (totalSize > 100 * 1024 * 1024) { showToast('⚠️ Total file size exceeds 100MB!'); return; }
+        selectedFiles = selectedFiles.concat(newFiles).slice(0, 10);
+        renderFileList();
+    }
+
+    function renderFileList() {
+        var html = '';
+        selectedFiles.forEach(function(f, i) {
+            var sz = (f.size / (1024 * 1024)).toFixed(2) + ' MB';
+            html += '<div class="fc"><span>📎 ' + f.name + ' (' + sz + ')</span><span class="fc-rm" onclick="rmFile(' + i + ')">✕</span></div>';
+        });
+        document.getElementById('fileList').innerHTML = html;
+        var addBtn = document.getElementById('addMoreFilesBtn');
+        if (selectedFiles.length > 0 && selectedFiles.length < 10 && !addBtn) {
+            document.getElementById('fileList').insertAdjacentHTML('afterend',
+                '<button id="addMoreFilesBtn" onclick="document.getElementById(\'fileInput\').click()" style="margin-top:8px;padding:8px 16px;background:#F5F5F7;color:#666;border:1.5px dashed #CCC;border-radius:10px;font-family:\'DM Sans\',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;width:100%;">➕ Add More Files</button>');
+        } else if (selectedFiles.length === 0 && addBtn) {
+            addBtn.remove();
+        }
+    }
+
+    function rmFile(i) {
+        selectedFiles.splice(i, 1);
+        renderFileList();
+    }
+
+    // ============================================================
+    // PHOTO UPLOAD / CROP
+    // ============================================================
+    var dragState = { active:false, startX:0, startY:0, curX:0, curY:0 };
+
+    function uploadPhoto(input) {
+        if (!input.files || !input.files[0]) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var cropImg = document.getElementById('cropImg');
+            cropImg.src = e.target.result;
+            cropImg.onload = function() {
+                var area = document.getElementById('cropArea');
+                var aW = area.offsetWidth, aH = area.offsetHeight;
+                var scale = Math.max(aW / cropImg.naturalWidth, aH / cropImg.naturalHeight);
+                var iW = cropImg.naturalWidth * scale, iH = cropImg.naturalHeight * scale;
+                cropImg.style.width = iW + 'px'; cropImg.style.height = iH + 'px';
+                dragState.curX = (aW - iW) / 2; dragState.curY = (aH - iH) / 2;
+                cropImg.style.left = dragState.curX + 'px'; cropImg.style.top = dragState.curY + 'px';
+            };
+            document.getElementById('photoModal').classList.add('open');
+            setupDrag();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+
+    function setupDrag() {
+        var area = document.getElementById('cropArea'), img = document.getElementById('cropImg');
+        area.ontouchstart = function(e) { e.preventDefault(); dragState.active=true; dragState.startX=e.touches[0].clientX-dragState.curX; dragState.startY=e.touches[0].clientY-dragState.curY; };
+        area.ontouchmove  = function(e) { e.preventDefault(); if(!dragState.active)return; clampDrag(e.touches[0].clientX,e.touches[0].clientY,area,img); };
+        area.ontouchend   = function() { dragState.active=false; };
+        area.onmousedown  = function(e) { dragState.active=true; dragState.startX=e.clientX-dragState.curX; dragState.startY=e.clientY-dragState.curY; };
+        document.onmousemove = function(e) { if(!dragState.active)return; clampDrag(e.clientX,e.clientY,area,img); };
+        document.onmouseup   = function() { dragState.active=false; };
+    }
+
+    function clampDrag(cx, cy, area, img) {
+        var aW=area.offsetWidth, aH=area.offsetHeight, iW=img.offsetWidth, iH=img.offsetHeight;
+        var nx=cx-dragState.startX, ny=cy-dragState.startY;
+        nx=Math.min(0,Math.max(aW-iW,nx)); ny=Math.min(0,Math.max(aH-iH,ny));
+        dragState.curX=nx; dragState.curY=ny;
+        img.style.left=nx+'px'; img.style.top=ny+'px';
+    }
+
+    function savePhoto() {
+        var area=document.getElementById('cropArea'), img=document.getElementById('cropImg');
+        var size=area.offsetWidth;
+        var canvas=document.createElement('canvas'); canvas.width=size; canvas.height=size;
+        var ctx=canvas.getContext('2d');
+        ctx.beginPath(); ctx.arc(size/2,size/2,size/2,0,Math.PI*2); ctx.clip();
+        ctx.drawImage(img,dragState.curX,dragState.curY,img.offsetWidth,img.offsetHeight);
+        var src=canvas.toDataURL('image/jpeg',0.9);
+        var avatarEl=document.getElementById('avatarEl');
+        var oldImg=avatarEl.querySelector('img'); if(oldImg) avatarEl.removeChild(oldImg);
+        var newImg=document.createElement('img'); newImg.src=src;
+        avatarEl.insertBefore(newImg,avatarEl.firstChild);
+        document.getElementById('avatarLetter').style.display='none';
+        document.getElementById('photoModal').classList.remove('open');
+        showToast('Profile photo saved! 📸');
+    }
+
+    function cancelPhoto() { document.getElementById('photoModal').classList.remove('open'); }
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+    function showToast(msg) {
+        var t=document.getElementById('toastEl');
+        t.textContent=msg; t.classList.add('show');
+        setTimeout(function(){ t.classList.remove('show'); }, 2500);
+    }
+
+    // ============================================================
+    // ADMIN — LOGIN
+    // ============================================================
+    var aAdmin = { email:'admin@adcase.com', password:'1' };
+    var aCurrentFilter = 'all';
+    var aPastSearchQuery = '';
+    var aPwdTargetId = null;
+
+    function showAdminLogin() { document.getElementById('adminLoginScreen').style.display='flex'; }
+    function hideAdminLogin() { document.getElementById('adminLoginScreen').style.display='none'; }
+
+    function aLogin() {
+        var email=document.getElementById('aEmail').value.trim();
+        var pwd=document.getElementById('aPassword').value;
+        if (email===aAdmin.email && pwd===aAdmin.password) {
+            document.getElementById('adminLoginScreen').style.display='none';
+            document.getElementById('adminApp').style.display='block';
+            loadAllOrders();
+            setupRealtimeOrders();
+        } else {
+            var err=document.getElementById('aErr'); err.style.display='block';
+            setTimeout(function(){ err.style.display='none'; },3000);
+        }
+    }
+
+    function aLogout() {
+        document.getElementById('adminApp').style.display='none';
+        document.getElementById('aPassword').value='';
+    }
+
+    function aShowPage(id, btn) {
+        document.querySelectorAll('.a-page').forEach(function(p){ p.classList.remove('active'); });
+        document.querySelectorAll('.a-nav-item').forEach(function(n){ n.classList.remove('active'); });
+        document.getElementById(id).classList.add('active');
+        if (btn) btn.classList.add('active');
+        var titles = { aOrders:['All Orders','Manage and update order status'], aPastOrders:['Past Orders','Archived orders by client'], aClients:['Clients','Manage client accounts'] };
+        document.getElementById('aPageTitle').textContent = titles[id][0];
+        document.getElementById('aPageSub').textContent   = titles[id][1];
+        if (id==='aOrders')     aRenderOrders();
+        if (id==='aPastOrders') { aPopulatePastOrdersDropdown(); aRenderPastOrders(); }
+        if (id==='aClients')    aRenderClients();
+    }
+
+    function aRefresh() {
+        var pending=orders.filter(function(o){ return o.status==='pending'; }).length;
+        document.getElementById('aPendingBadge').textContent=pending;
+    }
+
+    // ============================================================
+    // ADMIN — ORDER ROW
+    // ============================================================
+    function aOrderRow(o) {
+        var sLbl = o.status==='uploaded'?'Uploaded':o.status==='paused'?'Paused':o.status==='processing'?'In Progress':o.status.charAt(0).toUpperCase()+o.status.slice(1);
+        var client=clients.find(function(c){ return c.email===o.email; });
+        var initial=client?client.name.charAt(0):'?';
+        var cName=client?client.name:'Unknown';
+        var filesInfo=o.files&&o.files.length?' (📎 '+o.files.length+' files)':'';
+        var revInfo=o.revisionFiles&&o.revisionFiles.length?' (📎 '+o.revisionFiles.length+' rev files)':'';
+        var clientNoteHtml=o.clientNote?'<div style="background:#FFF3E0;border-left:3px solid #FF9800;padding:6px 8px;margin-top:6px;border-radius:4px;"><strong style="color:#EF6C00;font-size:0.75rem;">⚠️ Client Note:</strong><div style="color:#666;font-size:0.8rem;margin-top:2px;">'+o.clientNote+'</div></div>':'';
+        var prefix=o.isRevision?'<strong style="color:#FF9800;">REVISION:</strong> ':'<strong style="color:#4CAF50;">NEW:</strong> ';
+        var headlineHtml=o.headline?'<div style="font-weight:600;color:#F0F0F0;margin-bottom:4px;">📝 '+o.headline+'</div>':'';
+        var badge=o.isRevision
+            ?'<span style="background:rgba(255,152,0,0.15);color:#FF9800;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">REVISION</span>'
+            :'<span style="background:rgba(76,175,80,0.15);color:#4CAF50;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">NEW</span>';
+        var bs='padding:5px 12px;border-radius:8px;border:1px solid #444;font-family:\'DM Sans\',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;margin-right:4px;transition:all 0.2s;';
+        var grey='background:#2E2E2E;color:#888;';
+        var ac={pending:'background:#C62828;color:white;border-color:#C62828;',processing:'background:#2196F3;color:white;border-color:#2196F3;',paused:'background:#FF9800;color:white;border-color:#FF9800;',completed:'background:#4CAF50;color:white;border-color:#4CAF50;'};
+        var actionBtns='';
+        if (o.status!=='uploaded'&&o.status!=='done') {
+            actionBtns='<button style="'+bs+(o.status==='pending'?ac.pending:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'pending\')">Pending</button>'
+                      +'<button style="'+bs+(o.status==='processing'?ac.processing:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'processing\')">In Progress</button>'
+                      +'<button style="'+bs+(o.status==='paused'?ac.paused:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'paused\')">Pause</button>'
+                      +'<button style="'+bs+(o.status==='completed'||o.status==='uploaded'?ac.completed:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'completed\')">Done</button>';
+        }
+        var filesBtn=o.files&&o.files.length
+            ?'<button class="a-action-btn" style="background:rgba(158,158,158,0.12);color:#9E9E9E;border:1px solid rgba(158,158,158,0.2);margin-right:8px;margin-bottom:4px;" onclick="aDownloadFiles(\''+o.id+'\')">⬇ Files</button><br>':'';
+        var uploadBtn='';
+        if (o.status==='completed'&&!o.adminOutput) {
+            uploadBtn='<button class="a-action-btn" style="background:rgba(76,175,80,0.12);color:#4CAF50;border:1px solid rgba(76,175,80,0.2);margin-top:4px;" onclick="aUploadOutput(\''+o.id+'\')">⬆ Upload Output</button>';
+        } else if (o.status==='completed'&&o.adminOutput) {
+            var fc=Array.isArray(o.adminOutput)?o.adminOutput.length:1;
+            uploadBtn='<span style="color:#4CAF50;font-size:0.78rem;font-weight:600;display:inline-block;margin-right:8px;">✅ Output Uploaded ('+fc+' file'+(fc>1?'s':'')+')</span>'
+                     +'<button onclick="aDeleteOutput(\''+o.id+'\')" style="background:rgba(244,67,54,0.12);color:#F44336;border:none;padding:4px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;margin-right:8px;">✕</button><br>'
+                     +'<button class="a-action-btn" style="background:rgba(161,136,127,0.15);color:#A1887F;border:1px solid rgba(161,136,127,0.3);margin-top:4px;" onclick="aSendToStorage(\''+o.id+'\')">📦 Send to Storage</button>';
+        }
+        return '<tr>'
+            +'<td style="color:#FF3D00;font-weight:700;">#'+o.id+'</td>'
+            +'<td>'+badge+'</td>'
+            +'<td><div class="a-client-cell"><div class="a-client-av">'+initial+'</div><div><h4>'+cName+'</h4><p>'+o.email+'</p></div></div></td>'
+            +'<td style="color:#888;">'+(o.date||'')+'</td>'
+            +'<td style="color:#F0F0F0;">'+o.type+'</td>'
+            +'<td style="max-width:250px;color:#888;word-wrap:break-word;white-space:normal;">'+prefix+headlineHtml+(o.desc||'No instruction')+filesInfo+revInfo+clientNoteHtml+'</td>'
+            +'<td style="color:#888;white-space:nowrap;">'+(o.deadline||'No deadline')+'</td>'
+            +'<td><span class="a-sb a-sb-'+o.status+'"><span class="a-sd a-sd-'+o.status+'"></span>'+sLbl+'</span></td>'
+            +'<td>'+filesBtn+actionBtns+uploadBtn+'</td>'
+            +'</tr>';
+    }
+
+    function aRenderOrders() {
+        var tbody=document.getElementById('aOrdersBody');
+        var filtered=orders.filter(function(o){ return o.status!=='done'; });
+        if (aCurrentFilter!=='all') filtered=filtered.filter(function(o){ return o.status===aCurrentFilter; });
+        if (!filtered.length) { tbody.innerHTML='<tr><td colspan="9"><div class="a-empty"><div class="ei">📭</div><h4>No orders found</h4></div></td></tr>'; return; }
+        tbody.innerHTML=filtered.slice().reverse().map(aOrderRow).join('');
+    }
+
+    function aFilter(type, btn) {
+        aCurrentFilter=type;
+        document.querySelectorAll('.a-pills .a-pill').forEach(function(p){ p.classList.remove('active'); });
+        btn.classList.add('active');
+        aRenderOrders();
+    }
+
+    // ============================================================
+    // ADMIN — STATUS CHANGE → Supabase update
+    // ============================================================
+    async function aChangeStatus(id, newStatus) {
+        var o=orders.find(function(x){ return x.id===id; });
+        if (!o) return;
+        var res=await sb.from('orders').update({ status:newStatus }).eq('id', o.dbId);
+        if (res.error) { console.error('❌',res.error); showToast('⚠️ Error updating status'); return; }
+        var msg={pending:'Not Started',processing:'In Progress',paused:'Paused',completed:'Completed'};
+        showToast('✅ Status: '+msg[newStatus]);
+    }
+
+    // ============================================================
+    // ADMIN — UPLOAD OUTPUT → Supabase update
+    // ============================================================
+    async function aUploadOutput(orderId) {
+        var input=document.createElement('input');
+        input.type='file'; input.multiple=true; input.accept='.jpg,.jpeg,.png,.pdf,.ai,.psd,.indd,.zip';
+        input.onchange=async function(e) {
+            if (!e.target.files||!e.target.files.length) return;
+            var files=Array.from(e.target.files).slice(0,3);
+            var o=orders.find(function(x){ return x.id===orderId; });
+            if (!o) return;
+            var outputFiles=files.map(function(f){ return { name:f.name, size:f.size }; });
+            var res=await sb.from('orders').update({
+                admin_output: outputFiles,
+                completed_date: new Date().toISOString().split('T')[0]
+            }).eq('id', o.dbId);
+            if (res.error) { console.error('❌',res.error); showToast('⚠️ Error uploading output'); return; }
+            showToast('✅ Output uploaded: '+files.length+' file(s)');
+        };
+        input.click();
+    }
+
+    async function aDeleteOutput(orderId) {
+        if (!confirm('Delete uploaded output?')) return;
+        var o=orders.find(function(x){ return x.id===orderId; });
+        if (!o) return;
+        var res=await sb.from('orders').update({ admin_output:null, completed_date:null }).eq('id', o.dbId);
+        if (res.error) { console.error('❌',res.error); showToast('⚠️ Error'); return; }
+        showToast('🗑️ Output deleted');
+    }
+
+    async function aSendToStorage(orderId) {
+        if (!confirm('Archive this order?')) return;
+        var o=orders.find(function(x){ return x.id===orderId; });
+        if (!o) return;
+        var res=await sb.from('orders').update({ status:'done' }).eq('id', o.dbId);
+        if (res.error) { console.error('❌',res.error); showToast('⚠️ Error'); return; }
+        showToast('📦 Order archived');
+    }
+
+    function aDownloadFiles(orderId) {
+        var o=orders.find(function(x){ return x.id===orderId; });
+        if (o&&o.files&&o.files.length) showToast('📎 '+o.files.length+' file(s) listed');
+    }
+
+    // ============================================================
+    // ADMIN — PAST ORDERS
+    // ============================================================
+    function aPopulatePastOrdersDropdown() {
+        var dd=document.getElementById('aPastOrderClientFilter');
+        dd.innerHTML='<option value="">All Clients</option>';
+        clients.forEach(function(c){ dd.innerHTML+='<option value="'+c.email+'">'+c.name+'</option>'; });
+    }
+
+    function aPastOrderSearchFn() {
+        aPastSearchQuery=document.getElementById('aPastOrderSearch').value;
+        aRenderPastOrders();
+        aTogglePastClearButton();
+    }
+
+    function aClearPastSearch() {
+        document.getElementById('aPastOrderSearch').value='';
+        aPastSearchQuery='';
+        aRenderPastOrders();
+        aTogglePastClearButton();
+    }
+
+    function aTogglePastClearButton() {
+        var inp=document.getElementById('aPastOrderSearch');
+        var btn=document.getElementById('aPastClearSearch');
+        if (inp&&btn) btn.style.display=inp.value.trim()?'block':'none';
+    }
+
+    function aRenderPastOrders() {
+        var tbody=document.getElementById('aPastOrdersBody');
+        var filterEmail=document.getElementById('aPastOrderClientFilter').value;
+        var done=orders.filter(function(o){ return o.status==='done'; });
+        if (aPastSearchQuery) {
+            var q=aPastSearchQuery.toLowerCase();
+            done=done.filter(function(o){
+                var c=clients.find(function(x){ return x.email===o.email; });
+                return o.id.toLowerCase().includes(q)||(c?c.name.toLowerCase().includes(q):false);
+            });
+        }
+        if (filterEmail) done=done.filter(function(o){ return o.email===filterEmail; });
+        if (!done.length) { tbody.innerHTML='<tr><td colspan="7"><div class="a-empty"><div class="ei">📦</div><h4>No past orders</h4></div></td></tr>'; return; }
+        tbody.innerHTML=done.slice().reverse().map(function(o){
+            var c=clients.find(function(x){ return x.email===o.email; });
+            var initial=c?c.name.charAt(0):'?'; var cName=c?c.name:'Unknown';
+            var fc=o.adminOutput?(Array.isArray(o.adminOutput)?o.adminOutput.length:1):0;
+            var dlBtn=fc>0?'<button class="a-action-btn" style="background:rgba(46,125,50,0.12);color:#2E7D32;border:1px solid rgba(46,125,50,0.2);" onclick="downloadOutput(\''+o.id+'\')">⬇ Download ('+fc+')</button>':'<span style="color:#888;font-size:0.8rem;">No output</span>';
+            return '<tr>'
+                +'<td style="color:#FF3D00;font-weight:700;">#'+o.id+'</td>'
+                +'<td><div class="a-client-cell"><div class="a-client-av">'+initial+'</div><div><h4>'+cName+'</h4><p>'+o.email+'</p></div></div></td>'
+                +'<td style="color:#F0F0F0;">'+o.type+'</td>'
+                +'<td style="color:#888;">'+(o.date||'')+'</td>'
+                +'<td style="color:#888;">'+(o.completedDate||'-')+'</td>'
+                +'<td><span class="a-sb a-sb-completed"><span class="a-sd a-sd-completed"></span>Done</span></td>'
+                +'<td>'+dlBtn+'</td>'
+                +'</tr>';
+        }).join('');
+    }
+
+    // ============================================================
+    // ADMIN — CLIENTS
+    // ============================================================
+    function aRenderClients() {
+        document.getElementById('aClientsGrid').innerHTML=clients.map(function(c){
+            return '<div class="a-client-card">'
+                +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+                +'<div class="a-cc-top" style="margin-bottom:0;flex:1;"><div class="a-cc-av">'+c.name.charAt(0)+'</div>'
+                +'<div class="a-cc-info"><h4>'+c.name+'</h4><p>'+c.email+'</p></div></div>'
+                +'<div style="display:flex;gap:6px;">'
+                +'<button class="a-cc-btn a-cc-pwd" style="width:auto;padding:6px 10px;font-size:0.72rem;" onclick="aOpenPwd(\''+c.email+'\')">🔑 Change Password</button>'
+                +'<button class="a-cc-btn a-cc-del" style="width:auto;padding:6px 10px;font-size:0.72rem;" onclick="aDeleteClient(\''+c.email+'\')">🗑 Remove</button>'
+                +'</div></div></div>';
+        }).join('');
+    }
+
+    function aAddClient() {
+        var name=document.getElementById('aNewName').value.trim();
+        var email=document.getElementById('aNewEmail').value.trim();
+        var phone=document.getElementById('aNewPhone').value.trim();
+        var pwd=document.getElementById('aNewPwd').value.trim();
+        if (!name||!pwd) { showToast('⚠️ Full Name and Password are required'); return; }
+        if (!email&&!phone) { showToast('⚠️ Email or Contact Number is required'); return; }
+        if (!email&&phone) email=name.toLowerCase().replace(/\s+/g,'.')+'@client.local';
+        clients.push({ name:name, email:email, phone:phone, password:pwd });
+        document.getElementById('aNewName').value='';
+        document.getElementById('aNewEmail').value='';
+        document.getElementById('aNewPhone').value='';
+        document.getElementById('aNewPwd').value='';
+        aRenderClients();
+        showToast('✅ Client added: '+name);
+    }
+
+    function aDeleteClient(email) {
+        var c=clients.find(function(x){ return x.email===email; });
+        if (!c||!confirm('Remove '+c.name+'?')) return;
+        clients=clients.filter(function(x){ return x.email!==email; });
+        aRenderClients();
+        showToast('🗑 Client removed');
+    }
+
+    function aOpenPwd(email) {
+        aPwdTargetId=email;
+        var c=clients.find(function(x){ return x.email===email; });
+        document.getElementById('aPwdModalName').textContent='Change password for: '+(c?c.name:email);
+        document.getElementById('aNewPwdInput').value='';
+        document.getElementById('aPwdModal').classList.add('open');
+    }
+
+    function aClosePwd() { document.getElementById('aPwdModal').classList.remove('open'); aPwdTargetId=null; }
+
+    function aSavePwd() {
+        var newPwd=document.getElementById('aNewPwdInput').value.trim();
+        if (!newPwd) { showToast('⚠️ Enter new password'); return; }
+        var c=clients.find(function(x){ return x.email===aPwdTargetId; });
+        if (c) { c.password=newPwd; showToast('🔑 Password updated for '+c.name); }
+        aClosePwd();
+        aRenderClients();
+    }
+    </script>
+</body>
+</html>
