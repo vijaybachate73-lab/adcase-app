@@ -583,8 +583,8 @@
     // ✅ SUPABASE CONFIGURATION
     // ⚠️  तुमचा Supabase URL आणि Anon Key इथे टाका
     // ============================================================
-    var SUPABASE_URL  = 'https://oguueuvowwkkwamvxvrs.supabase.co';
-var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
+    var SUPABASE_URL  = 'https://oguueuvowwkkwamvxvrs.supabase.co';   // e.g. https://xxxx.supabase.co
+    var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ'; // Project Settings > API
 
     var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     console.log('✅ Supabase client initialized');
@@ -792,7 +792,32 @@ var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
     }
 
     // ============================================================
-    // SUBMIT ORDER → Supabase insert
+    // UPLOAD FILES TO SUPABASE STORAGE
+    // ============================================================
+    async function uploadFilesToStorage(files, orderId) {
+        var uploadedFiles = [];
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var filePath = orderId + '/' + Date.now() + '_' + file.name;
+            var res = await sb.storage.from('adcase-files').upload(filePath, file);
+            if (res.error) {
+                console.error('❌ File upload error:', res.error);
+                showToast('⚠️ File upload failed: ' + file.name);
+            } else {
+                var urlRes = sb.storage.from('adcase-files').getPublicUrl(filePath);
+                uploadedFiles.push({
+                    name: file.name,
+                    size: file.size,
+                    path: filePath,
+                    url:  urlRes.data.publicUrl
+                });
+            }
+        }
+        return uploadedFiles;
+    }
+
+    // ============================================================
+    // SUBMIT ORDER → Upload files → Supabase insert
     // ============================================================
     async function submitOrder() {
         var type     = document.getElementById('projType').value;
@@ -814,6 +839,13 @@ var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
         var orderId = 'A' + orderCounter;
         orderCounter++;
 
+        // Upload files first
+        var uploadedFiles = [];
+        if (selectedFiles.length > 0) {
+            showToast('📤 Uploading files...');
+            uploadedFiles = await uploadFilesToStorage(selectedFiles, orderId);
+        }
+
         var newRow = {
             order_id:      orderId,
             client_email:  currentUser.email,
@@ -821,7 +853,7 @@ var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
             headline:      headline || '',
             description:   desc || 'No description',
             deadline:      deadline || 'No deadline',
-            files:         selectedFiles.map(function(f) { return { name:f.name, size:f.size }; }),
+            files:         uploadedFiles,
             status:        'pending',
             placed_date:   today,
             is_revision:   false,
@@ -839,7 +871,6 @@ var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
         }
         showToast('Order submitted! 🎉');
         clearOrderForm();
-        // Realtime listener will auto-refresh orders
     }
 
     function clearOrderForm() {
@@ -1199,7 +1230,16 @@ var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
 
     function aDownloadFiles(orderId) {
         var o=orders.find(function(x){ return x.id===orderId; });
-        if (o&&o.files&&o.files.length) showToast('📎 '+o.files.length+' file(s) listed');
+        if (o&&o.files&&o.files.length) {
+            o.files.forEach(function(f) {
+                if (f.url) {
+                    var a=document.createElement('a');
+                    a.href=f.url; a.download=f.name; a.target='_blank';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }
+            });
+            showToast('📎 Downloading '+o.files.length+' file(s)...');
+        }
     }
 
     // ============================================================
@@ -1303,7 +1343,7 @@ var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ';
 
     function aOpenPwd(email) {
         aPwdTargetId=email;
-        var c=clients.find(function(x){ return x.email===email; });h
+        var c=clients.find(function(x){ return x.email===email; });
         document.getElementById('aPwdModalName').textContent='Change password for: '+(c?c.name:email);
         document.getElementById('aNewPwdInput').value='';
         document.getElementById('aPwdModal').classList.add('open');
