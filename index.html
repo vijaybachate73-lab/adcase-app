@@ -409,6 +409,15 @@
                 <p style="margin:0 0 12px 0;color:#666;font-size:0.85rem;" id="sendBackOrderInfo">Order #A101</p>
                 <label style="display:block;color:#1A1A1A;font-size:0.88rem;font-weight:600;margin-bottom:8px;">What changes do you need?</label>
                 <textarea id="sendBackNote" placeholder="Explain what needs to be changed..." style="width:100%;min-height:100px;padding:12px;border:1.5px solid #E0E0E0;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;resize:vertical;outline:none;"></textarea>
+                
+                <!-- File Attach Section -->
+                <div style="margin-top:14px;">
+                    <label style="display:block;color:#1A1A1A;font-size:0.88rem;font-weight:600;margin-bottom:8px;">Attach Files (Optional)</label>
+                    <input type="file" id="sendBackFileInput" multiple accept=".jpg,.jpeg,.png,.pdf,.ai,.psd,.zip" style="display:none;" onchange="handleSendBackFiles(this.files)">
+                    <button onclick="document.getElementById('sendBackFileInput').click()" style="width:100%;padding:10px;background:#F5F5F7;color:#666;border:1.5px dashed #CCC;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">📎 Choose Files</button>
+                    <div id="sendBackFileList" style="margin-top:8px;"></div>
+                </div>
+
                 <div style="display:flex;gap:10px;margin-top:16px;">
                     <button onclick="closeSendBack()" style="flex:1;padding:12px;background:#F5F5F7;color:#666;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">Cancel</button>
                     <button onclick="confirmSendBack()" style="flex:1;padding:12px;background:#FF9800;color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">Send Back</button>
@@ -583,8 +592,8 @@
     // ✅ SUPABASE CONFIGURATION
     // ⚠️  तुमचा Supabase URL आणि Anon Key इथे टाका
     // ============================================================
-    var SUPABASE_URL  = 'https://oguueuvowwkkwamvxvrs.supabase.co';   // e.g. https://xxxx.supabase.co
-    var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ'; // Project Settings > API
+    var SUPABASE_URL  = 'YOUR_SUPABASE_URL';   // e.g. https://xxxx.supabase.co
+    var SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY'; // Project Settings > API
 
     var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     console.log('✅ Supabase client initialized');
@@ -799,12 +808,12 @@
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var filePath = orderId + '/' + Date.now() + '_' + file.name;
-            var res = await sb.storage.from('adcase-files').upload(filePath, file);
+            var res = await sb.storage.from('order-files').upload(filePath, file);
             if (res.error) {
                 console.error('❌ File upload error:', res.error);
                 showToast('⚠️ File upload failed: ' + file.name);
             } else {
-                var urlRes = sb.storage.from('adcase-files').getPublicUrl(filePath);
+                var urlRes = sb.storage.from('order-files').getPublicUrl(filePath);
                 uploadedFiles.push({
                     name: file.name,
                     size: file.size,
@@ -887,18 +896,39 @@
     // SEND BACK → Supabase update
     // ============================================================
     var sendBackTargetId = null;
+    var sendBackSelectedFiles = [];
 
     function openSendBack(orderId) {
         sendBackTargetId = orderId;
+        sendBackSelectedFiles = [];
         var o = orders.find(function(x) { return x.id === orderId; });
         document.getElementById('sendBackOrderInfo').textContent = 'Order #' + orderId + ' - ' + (o ? o.type : '');
         document.getElementById('sendBackNote').value = '';
+        document.getElementById('sendBackFileList').innerHTML = '';
         document.getElementById('sendBackModal').style.display = 'flex';
     }
 
     function closeSendBack() {
         document.getElementById('sendBackModal').style.display = 'none';
         sendBackTargetId = null;
+        sendBackSelectedFiles = [];
+    }
+
+    function handleSendBackFiles(files) {
+        sendBackSelectedFiles = Array.from(files).slice(0, 5);
+        var html = '';
+        sendBackSelectedFiles.forEach(function(f, i) {
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#F5F5F7;border-radius:8px;margin-top:6px;">'
+                  + '<span style="font-size:0.78rem;color:#666;">📎 ' + f.name + '</span>'
+                  + '<button onclick="removeSendBackFile(' + i + ')" style="background:rgba(255,61,0,0.1);color:#FF3D00;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:0.9rem;line-height:1;">×</button>'
+                  + '</div>';
+        });
+        document.getElementById('sendBackFileList').innerHTML = html;
+    }
+
+    function removeSendBackFile(index) {
+        sendBackSelectedFiles.splice(index, 1);
+        handleSendBackFiles(sendBackSelectedFiles);
     }
 
     async function confirmSendBack() {
@@ -906,10 +936,19 @@
         if (!note) { showToast('⚠️ Please explain what changes you need'); return; }
         var o = orders.find(function(x) { return x.id === sendBackTargetId; });
         if (!o) return;
+
+        // Upload revision files if any
+        var revFiles = [];
+        if (sendBackSelectedFiles.length > 0) {
+            showToast('📤 Uploading files...');
+            revFiles = await uploadFilesToStorage(sendBackSelectedFiles, o.id + '_rev_' + Date.now());
+        }
+
         var res = await sb.from('orders').update({
             status:         'pending',
             is_revision:    true,
             client_note:    note,
+            revision_files: revFiles,
             admin_output:   null,
             completed_date: null
         }).eq('id', o.dbId);
@@ -949,11 +988,27 @@
 
     function closePastOrders() { document.getElementById('pastOrdersModal').style.display = 'none'; }
 
-    function downloadOutput(orderId) {
+    async function downloadOutput(orderId) {
         var o = orders.find(function(x) { return x.id === orderId; });
-        if (o && o.adminOutput) {
-            var fc = Array.isArray(o.adminOutput) ? o.adminOutput.length : 1;
-            showToast('📎 ' + fc + ' file(s) — contact admin to download');
+        if (!o || !o.adminOutput) return;
+        var files = Array.isArray(o.adminOutput) ? o.adminOutput : [o.adminOutput];
+        showToast('⏳ Downloading ' + files.length + ' file(s)...');
+        for (var i = 0; i < files.length; i++) {
+            var f = files[i];
+            if (f.url) {
+                try {
+                    var response = await fetch(f.url);
+                    var blob = await response.blob();
+                    var blobUrl = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = blobUrl; a.download = f.name;
+                    document.body.appendChild(a); a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(blobUrl);
+                } catch (err) {
+                    window.open(f.url, '_blank');
+                }
+            }
         }
     }
 
@@ -1199,12 +1254,25 @@
             var files=Array.from(e.target.files).slice(0,3);
             var o=orders.find(function(x){ return x.id===orderId; });
             if (!o) return;
-            var outputFiles=files.map(function(f){ return { name:f.name, size:f.size }; });
+            showToast('⏳ Uploading output...');
+            var uploadedFiles = [];
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var filePath = 'output_' + orderId + '_' + Date.now() + '_' + i + '_' + file.name;
+                var uploadRes = await sb.storage.from('order-files').upload(filePath, file);
+                if (uploadRes.error) {
+                    console.error('Upload error:', uploadRes.error);
+                    showToast('⚠️ Error uploading: ' + file.name);
+                    return;
+                }
+                var urlRes = sb.storage.from('order-files').getPublicUrl(filePath);
+                uploadedFiles.push({ name: file.name, size: file.size, url: urlRes.data.publicUrl });
+            }
             var res=await sb.from('orders').update({
-                admin_output: outputFiles,
+                admin_output: uploadedFiles,
                 completed_date: new Date().toISOString().split('T')[0]
             }).eq('id', o.dbId);
-            if (res.error) { console.error('❌',res.error); showToast('⚠️ Error uploading output'); return; }
+            if (res.error) { console.error('❌',res.error); showToast('⚠️ Error saving output'); return; }
             showToast('✅ Output uploaded: '+files.length+' file(s)');
         };
         input.click();
@@ -1228,34 +1296,17 @@
         showToast('📦 Order archived');
     }
 
-    async function aDownloadFiles(orderId) {
-        var o = orders.find(function(x) { return x.id === orderId; });
-        if (o && o.files && o.files.length) {
-            showToast('⏳ Downloading ' + o.files.length + ' file(s)... Please wait.');
-            for (var i = 0; i < o.files.length; i++) {
-                var f = o.files[i];
+    function aDownloadFiles(orderId) {
+        var o=orders.find(function(x){ return x.id===orderId; });
+        if (o&&o.files&&o.files.length) {
+            o.files.forEach(function(f) {
                 if (f.url) {
-                    try {
-                        // फाईलचा डेटा बॅकग्राउंडमध्ये फेच करणे
-                        var response = await fetch(f.url);
-                        var blob = await response.blob();
-                        var blobUrl = window.URL.createObjectURL(blob);
-                        
-                        // फाईल फोर्स डाऊनलोड करणे
-                        var a = document.createElement('a');
-                        a.href = blobUrl;
-                        a.download = f.name; 
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        window.URL.revokeObjectURL(blobUrl);
-                    } catch (error) {
-                        console.error('Download error:', error);
-                        // जर फेच करताना काही अडचण आली, तर जुन्या पद्धतीने टॅबमध्ये उघडेल
-                        window.open(f.url, '_blank');
-                    }
+                    var a=document.createElement('a');
+                    a.href=f.url; a.download=f.name; a.target='_blank';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 }
-            }
+            });
+            showToast('📎 Downloading '+o.files.length+' file(s)...');
         }
     }
 
