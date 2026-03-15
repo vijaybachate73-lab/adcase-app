@@ -592,8 +592,8 @@
     // ✅ SUPABASE CONFIGURATION
     // ⚠️  तुमचा Supabase URL आणि Anon Key इथे टाका
     // ============================================================
-    var SUPABASE_URL  = 'YOUR_SUPABASE_URL';   // e.g. https://xxxx.supabase.co
-    var SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY'; // Project Settings > API
+    var SUPABASE_URL  = 'https://oguueuvowwkkwamvxvrs.supabase.co';   // e.g. https://xxxx.supabase.co
+    var SUPABASE_ANON = 'sb_publishable_OpdWf-jmXRN_3aAofSc2JQ_SGrBb6wJ'; // Project Settings > API
 
     var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     console.log('✅ Supabase client initialized');
@@ -808,12 +808,12 @@
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var filePath = orderId + '/' + Date.now() + '_' + file.name;
-            var res = await sb.storage.from('order-files').upload(filePath, file);
+            var res = await sb.storage.from('adcase-files').upload(filePath, file);
             if (res.error) {
                 console.error('❌ File upload error:', res.error);
                 showToast('⚠️ File upload failed: ' + file.name);
             } else {
-                var urlRes = sb.storage.from('order-files').getPublicUrl(filePath);
+                var urlRes = sb.storage.from('adcase-files').getPublicUrl(filePath);
                 uploadedFiles.push({
                     name: file.name,
                     size: file.size,
@@ -1259,13 +1259,13 @@
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var filePath = 'output_' + orderId + '_' + Date.now() + '_' + i + '_' + file.name;
-                var uploadRes = await sb.storage.from('order-files').upload(filePath, file);
+                var uploadRes = await sb.storage.from('adcase-files').upload(filePath, file);
                 if (uploadRes.error) {
                     console.error('Upload error:', uploadRes.error);
                     showToast('⚠️ Error uploading: ' + file.name);
                     return;
                 }
-                var urlRes = sb.storage.from('order-files').getPublicUrl(filePath);
+                var urlRes = sb.storage.from('adcase-files').getPublicUrl(filePath);
                 uploadedFiles.push({ name: file.name, size: file.size, url: urlRes.data.publicUrl });
             }
             var res=await sb.from('orders').update({
@@ -1296,17 +1296,30 @@
         showToast('📦 Order archived');
     }
 
-    function aDownloadFiles(orderId) {
-        var o=orders.find(function(x){ return x.id===orderId; });
-        if (o&&o.files&&o.files.length) {
-            o.files.forEach(function(f) {
+    async function aDownloadFiles(orderId) {
+        var o = orders.find(function(x) { return x.id === orderId; });
+        if (o && o.files && o.files.length) {
+            showToast('⏳ Downloading ' + o.files.length + ' file(s)... Please wait.');
+            for (var i = 0; i < o.files.length; i++) {
+                var f = o.files[i];
                 if (f.url) {
-                    var a=document.createElement('a');
-                    a.href=f.url; a.download=f.name; a.target='_blank';
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    try {
+                        var response = await fetch(f.url);
+                        var blob = await response.blob();
+                        var blobUrl = window.URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = f.name; 
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(blobUrl);
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        window.open(f.url, '_blank');
+                    }
                 }
-            });
-            showToast('📎 Downloading '+o.files.length+' file(s)...');
+            }
         }
     }
 
