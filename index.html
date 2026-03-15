@@ -1228,17 +1228,34 @@
         showToast('📦 Order archived');
     }
 
-    function aDownloadFiles(orderId) {
-        var o=orders.find(function(x){ return x.id===orderId; });
-        if (o&&o.files&&o.files.length) {
-            o.files.forEach(function(f) {
+    async function aDownloadFiles(orderId) {
+        var o = orders.find(function(x) { return x.id === orderId; });
+        if (o && o.files && o.files.length) {
+            showToast('⏳ Downloading ' + o.files.length + ' file(s)... Please wait.');
+            for (var i = 0; i < o.files.length; i++) {
+                var f = o.files[i];
                 if (f.url) {
-                    var a=document.createElement('a');
-                    a.href=f.url; a.download=f.name; a.target='_blank';
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    try {
+                        // फाईलचा डेटा बॅकग्राउंडमध्ये फेच करणे
+                        var response = await fetch(f.url);
+                        var blob = await response.blob();
+                        var blobUrl = window.URL.createObjectURL(blob);
+                        
+                        // फाईल फोर्स डाऊनलोड करणे
+                        var a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = f.name; 
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(blobUrl);
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        // जर फेच करताना काही अडचण आली, तर जुन्या पद्धतीने टॅबमध्ये उघडेल
+                        window.open(f.url, '_blank');
+                    }
                 }
-            });
-            showToast('📎 Downloading '+o.files.length+' file(s)...');
+            }
         }
     }
 
