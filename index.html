@@ -951,7 +951,7 @@
             revision_files: revFiles,
             admin_output:   null,
             completed_date: null
-        }).eq('id', o.dbId);
+        }).eq('order_id', o.id);
         if (res.error) { console.error('❌', res.error); showToast('⚠️ Error'); return; }
         showToast('↩ Order sent back for changes');
         closeSendBack();
@@ -1237,7 +1237,7 @@
     async function aChangeStatus(id, newStatus) {
         var o=orders.find(function(x){ return x.id===id; });
         if (!o) return;
-        var res=await sb.from('orders').update({ status:newStatus }).eq('id', o.dbId);
+        var res=await sb.from('orders').update({ status:newStatus }).eq('order_id', o.id);
         if (res.error) { console.error('❌',res.error); showToast('⚠️ Error updating status'); return; }
         var msg={pending:'Not Started',processing:'In Progress',paused:'Paused',completed:'Completed'};
         showToast('✅ Status: '+msg[newStatus]);
@@ -1271,7 +1271,7 @@
             var res=await sb.from('orders').update({
                 admin_output: uploadedFiles,
                 completed_date: new Date().toISOString().split('T')[0]
-            }).eq('id', o.dbId);
+            }).eq('order_id', o.id);
             if (res.error) { console.error('❌',res.error); showToast('⚠️ Error saving output'); return; }
             showToast('✅ Output uploaded: '+files.length+' file(s)');
         };
@@ -1282,7 +1282,7 @@
         if (!confirm('Delete uploaded output?')) return;
         var o=orders.find(function(x){ return x.id===orderId; });
         if (!o) return;
-        var res=await sb.from('orders').update({ admin_output:null, completed_date:null }).eq('id', o.dbId);
+        var res=await sb.from('orders').update({ admin_output:null, completed_date:null }).eq('order_id', o.id);
         if (res.error) { console.error('❌',res.error); showToast('⚠️ Error'); return; }
         showToast('🗑️ Output deleted');
     }
@@ -1291,7 +1291,7 @@
         if (!confirm('Archive this order?')) return;
         var o=orders.find(function(x){ return x.id===orderId; });
         if (!o) return;
-        var res=await sb.from('orders').update({ status:'done' }).eq('id', o.dbId);
+        var res=await sb.from('orders').update({ status:'done' }).eq('order_id', o.id);
         if (res.error) { console.error('❌',res.error); showToast('⚠️ Error'); return; }
         showToast('📦 Order archived');
     }
