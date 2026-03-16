@@ -655,8 +655,20 @@ var realtimeChannel = null;
         orderCounter = max + 1;
 
         console.log('✅ Loaded', orders.length, 'orders from Supabase');
-        updateUI();
-    }
+        updateUI();
+    }
+
+    // 🚀 नवीन फंक्शन: क्लायंट्स डेटाबेसमधून परत आणण्यासाठी
+    async function loadAllClients() {
+        var res = await sb.from('clients').select('*');
+        if (res.error) {
+            console.error('❌ Error loading clients:', res.error);
+            return;
+        }
+        clients = res.data; 
+        console.log('✅ Loaded', clients.length, 'clients from Supabase');
+        aRenderClients(); 
+    }
 
     // Update all UI panels after data changes
     function updateUI() {
@@ -681,6 +693,7 @@ var realtimeChannel = null;
                 function(payload) {
                     console.log('🔄 Realtime update:', payload.eventType);
                     loadAllOrders();
+loadAllClients();
                 }
             )
             .subscribe(function(status) {
@@ -716,6 +729,7 @@ var realtimeChannel = null;
         document.getElementById('projDeadline').value = today;
         document.getElementById('projDeadline').min   = today;
         loadAllOrders();
+loadAllClients();
         setupRealtimeOrders();
         window.scrollTo(0, 0);
     }
@@ -1151,10 +1165,11 @@ var realtimeChannel = null;
             document.getElementById('adminLoginScreen').style.display='none';
             document.getElementById('loginScreen').style.display='none';
             document.getElementById('adminApp').style.display='block';
-            loadAllOrders();
-            setupRealtimeOrders();
-        }
-    }
+            loadAllOrders();
+            loadAllClients(); // <--- ही बघ आपली नवीन ओळ इथे आली
+            setupRealtimeOrders();
+        }
+    }
 
     function aLogout() {
         localStorage.removeItem('adcase_admin');
@@ -1427,22 +1442,33 @@ function aRenderOrders() {
         }).join('');
     }
 
-    function aAddClient() {
-        var name=document.getElementById('aNewName').value.trim();
-        var email=document.getElementById('aNewEmail').value.trim();
-        var phone=document.getElementById('aNewPhone').value.trim();
-        var pwd=document.getElementById('aNewPwd').value.trim();
-        if (!name||!pwd) { showToast('⚠️ Full Name and Password are required'); return; }
-        if (!email&&!phone) { showToast('⚠️ Email or Contact Number is required'); return; }
-        if (!email&&phone) email=name.toLowerCase().replace(/\s+/g,'.')+'@client.local';
-        clients.push({ name:name, email:email, phone:phone, password:pwd });
-        document.getElementById('aNewName').value='';
-        document.getElementById('aNewEmail').value='';
-        document.getElementById('aNewPhone').value='';
-        document.getElementById('aNewPwd').value='';
-        aRenderClients();
-        showToast('✅ Client added: '+name);
-    }
+    async function aAddClient() {
+        var name=document.getElementById('aNewName').value.trim();
+        var email=document.getElementById('aNewEmail').value.trim();
+        var phone=document.getElementById('aNewPhone').value.trim();
+        var pwd=document.getElementById('aNewPwd').value.trim();
+        if (!name||!pwd) { showToast('⚠️ Full Name and Password are required'); return; }
+        if (!email&&!phone) { showToast('⚠️ Email or Contact Number is required'); return; }
+        if (!email&&phone) email=name.toLowerCase().replace(/\s+/g,'.')+'@client.local';
+
+        showToast('⏳ Saving client...');
+
+        // 🚀 नवीन कोड: Supabase मध्ये डेटा पाठवणे
+        var res = await sb.from('clients').insert([{ name: name, email: email, phone: phone, password: pwd }]);
+        if (res.error) {
+            console.error('❌ Insert error:', res.error);
+            showToast('⚠️ Error adding client.');
+            return;
+        }
+
+        clients.push({ name:name, email:email, phone:phone, password:pwd });
+        document.getElementById('aNewName').value='';
+        document.getElementById('aNewEmail').value='';
+        document.getElementById('aNewPhone').value='';
+        document.getElementById('aNewPwd').value='';
+        aRenderClients();
+        showToast('✅ Client added: '+name);
+    }
 
     function aDeleteClient(email) {
         var c=clients.find(function(x){ return x.email===email; });
@@ -1515,10 +1541,11 @@ function aRenderOrders() {
             document.getElementById('adminLoginScreen').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminApp').style.display = 'block';
-            loadAllOrders();
-            setupRealtimeOrders();
-            return;
-        }
+            loadAllOrders();
+            loadAllClients(); // <--- ही नवीन ओळ इथे पण आली
+            setupRealtimeOrders();
+            return;
+        }
 
         var savedUser = localStorage.getItem('adcase_user');
         if (savedUser) {
