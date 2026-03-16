@@ -279,29 +279,9 @@
         <div class="login-body">
             <h2>Welcome Back</h2>
             <p class="sub">Sign in to access your dashboard and manage your design projects.</p>
-            <label class="lbl">Client Name</label>
-            <div class="inp-group sel">
-                <select id="clientSelect">
-                    <option value="">Select your name...</option>
-                    <option value="0">Vijay Bachate</option>
-                    <option value="1">Mahaling Mali</option>
-                    <option value="2">Ganesh Patil</option>
-                    <option value="3">Darshan Patil</option>
-                    <option value="4">Gayatri Sagare</option>
-                    <option value="5">Pooja Bachate</option>
-                    <option value="6">Rushi Patil</option>
-                    <option value="7">Sharad Shinde</option>
-                    <option value="8">Aman Bhosale</option>
-                    <option value="9">Swagat Mali</option>
-                    <option value="10">Chetan Hubale</option>
-                    <option value="11">Akshay Phulare</option>
-                    <option value="12">Vaibhav Chavan</option>
-                    <option value="13">Prashant Honmane</option>
-                    <option value="14">Bansi Honmane</option>
-                    <option value="15">Shankar Jadhav</option>
-                    <option value="16">Pradip Arbune</option>
-                    <option value="17">Sushant Hubale</option>
-                </select>
+            <label class="lbl">Email Address</label>
+            <div class="inp-group">
+                <input type="email" id="clientEmail" placeholder="client@example.com">
             </div>
             <label class="lbl">Password</label>
             <div class="inp-group">
@@ -469,6 +449,7 @@
             </div>
             <button class="a-submit" onclick="aLogin()">Sign In →</button>
             <p class="a-err" id="aErr">❌ Wrong email or password!</p>
+            <p style="text-align:center; margin-top:14px; font-size:0.82rem; color:var(--primary); cursor:pointer; font-weight:600; transition:0.2s;" onmouseover="this.style.color='var(--secondary)'" onmouseout="this.style.color='var(--primary)'" onclick="aForgotPassword()">Forgot Password?</p>
             <p class="a-back-link" onclick="hideAdminLogin()">← <span>Back to Client Login</span></p>
         </div>
     </div>
@@ -619,26 +600,6 @@
     var selectedFiles = [];
     var realtimeChannel = null;
 
-    var clients = [
-        { email:'vijay.bachate@gmail.com',    password:'1', name:'Vijay Bachate' },
-        { email:'mahaling.mali@gmail.com',    password:'1', name:'Mahaling Mali' },
-        { email:'ganesh.patil@gmail.com',     password:'1', name:'Ganesh Patil' },
-        { email:'darshan.patil@gmail.com',    password:'1', name:'Darshan Patil' },
-        { email:'gayatri.sagare@gmail.com',   password:'1', name:'Gayatri Sagare' },
-        { email:'pooja.bachate@gmail.com',    password:'1', name:'Pooja Bachate' },
-        { email:'rushi.patil@gmail.com',      password:'1', name:'Rushi Patil' },
-        { email:'sharad.shinde@gmail.com',    password:'1', name:'Sharad Shinde' },
-        { email:'aman.bhosale@gmail.com',     password:'1', name:'Aman Bhosale' },
-        { email:'swagat.mali@gmail.com',      password:'1', name:'Swagat Mali' },
-        { email:'chetan.hubale@gmail.com',    password:'1', name:'Chetan Hubale' },
-        { email:'akshay.phulare@gmail.com',   password:'1', name:'Akshay Phulare' },
-        { email:'vaibhav.chavan@gmail.com',   password:'1', name:'Vaibhav Chavan' },
-        { email:'prashant.honmane@gmail.com', password:'1', name:'Prashant Honmane' },
-        { email:'bansi.honmane@gmail.com',    password:'1', name:'Bansi Honmane' },
-        { email:'shankar.jadhav@gmail.com',   password:'1', name:'Shankar Jadhav' },
-        { email:'pradip.arbune@gmail.com',    password:'1', name:'Pradip Arbune' },
-        { email:'sushant.hubale@gmail.com',   password:'1', name:'Sushant Hubale' }
-    ];
 
     var icons = {
         'Instagram Post':'📸','Instagram Story':'📱','Instagram Reel':'🎬',
@@ -1141,7 +1102,6 @@
     // ============================================================
     // ADMIN — LOGIN
     // ============================================================
-    var aAdmin = { email:'admin@adcase.com', password:'1' };
     var aCurrentFilter = 'all';
     var aPastSearchQuery = '';
     var aPwdTargetId = null;
@@ -1149,19 +1109,49 @@
     function showAdminLogin() { document.getElementById('adminLoginScreen').style.display='flex'; }
     function hideAdminLogin() { document.getElementById('adminLoginScreen').style.display='none'; }
 
-    function aLogin() {
+    // ============================================================
+    // ADMIN — LOGIN (Supabase Secure Auth)
+    // ============================================================
+    async function aLogin() {
         var email=document.getElementById('aEmail').value.trim();
         var pwd=document.getElementById('aPassword').value;
-        if (email===aAdmin.email && pwd===aAdmin.password) {
+        
+        if(!email || !pwd) {
+            var err=document.getElementById('aErr'); 
+            err.textContent = '❌ Please enter email and password!';
+            err.style.display='block';
+            setTimeout(function(){ err.style.display='none'; },3000);
+            return;
+        }
+
+        var btn = document.querySelector('.a-submit');
+        var originalText = btn.innerHTML;
+        btn.innerHTML = 'Signing In... ⏳';
+        btn.disabled = true;
+
+        // 🔒 Supabase कडे पासवर्ड तपासण्यासाठी पाठवणे
+        var res = await sb.auth.signInWithPassword({
+            email: email,
+            password: pwd
+        });
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (res.error) {
+            console.error('Login Error:', res.error.message);
+            var err=document.getElementById('aErr'); 
+            err.textContent = '❌ Wrong email or password!';
+            err.style.display='block';
+            setTimeout(function(){ err.style.display='none'; },3000);
+        } else {
+            // ✅ लॉगिन यशस्वी!
             localStorage.setItem('adcase_admin', 'true');
             document.getElementById('adminLoginScreen').style.display='none';
             document.getElementById('loginScreen').style.display='none';
             document.getElementById('adminApp').style.display='block';
             loadAllOrders();
             setupRealtimeOrders();
-        } else {
-            var err=document.getElementById('aErr'); err.style.display='block';
-            setTimeout(function(){ err.style.display='none'; },3000);
         }
     }
 
@@ -1502,7 +1492,7 @@ function aRenderOrders() {
             var diff = d - now;
             
             if (diff <= 0) {
-                el.innerHTML = '🚨 Overdue (वेळ संपली)';
+                el.innerHTML = '🚨 Overdue';
                 el.style.color = '#F44336';
             } else {
                 var totalMins = Math.floor(diff / (1000 * 60));
