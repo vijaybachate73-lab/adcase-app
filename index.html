@@ -737,6 +737,7 @@
         var c = clients[parseInt(idx)];
         if (c.password === pwd) {
             currentUser = { name: c.name, email: c.email };
+            localStorage.setItem('adcase_user', JSON.stringify(currentUser));
             showHome();
         } else {
             showToast('Wrong password! 🔐');
@@ -758,6 +759,7 @@
     }
 
     function goBack() {
+        localStorage.removeItem('adcase_user');
         currentUser   = null;
         selectedFiles = [];
         document.getElementById('clientSelect').value   = '';
@@ -1151,7 +1153,9 @@
         var email=document.getElementById('aEmail').value.trim();
         var pwd=document.getElementById('aPassword').value;
         if (email===aAdmin.email && pwd===aAdmin.password) {
+            localStorage.setItem('adcase_admin', 'true');
             document.getElementById('adminLoginScreen').style.display='none';
+            document.getElementById('loginScreen').style.display='none';
             document.getElementById('adminApp').style.display='block';
             loadAllOrders();
             setupRealtimeOrders();
@@ -1162,7 +1166,9 @@
     }
 
     function aLogout() {
+        localStorage.removeItem('adcase_admin');
         document.getElementById('adminApp').style.display='none';
+        document.getElementById('loginScreen').style.display='block';
         document.getElementById('aPassword').value='';
     }
 
@@ -1508,6 +1514,27 @@ function aRenderOrders() {
     }
     setInterval(updateCountdowns, 60000); 
     setTimeout(updateCountdowns, 500);
+
+// ============================================================
+    // AUTO LOGIN LOGIC (LOCALSTORAGE)
+    // ============================================================
+    window.onload = function() {
+        var savedAdmin = localStorage.getItem('adcase_admin');
+        if (savedAdmin === 'true') {
+            document.getElementById('adminLoginScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminApp').style.display = 'block';
+            loadAllOrders();
+            setupRealtimeOrders();
+            return;
+        }
+
+        var savedUser = localStorage.getItem('adcase_user');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            showHome();
+        }
+    };
     </script>
 </body>
 </html>
