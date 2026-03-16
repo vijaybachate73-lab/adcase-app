@@ -1187,6 +1187,9 @@
     // ============================================================
     // ADMIN — ORDER ROW
     // ============================================================
+// ============================================================
+    // ADMIN — ORDER ROW
+    // ============================================================
     function aOrderRow(o) {
         var sLbl = o.status==='uploaded'?'Uploaded':o.status==='paused'?'Paused':o.status==='processing'?'In Progress':o.status.charAt(0).toUpperCase()+o.status.slice(1);
         var client=clients.find(function(c){ return c.email===o.email; });
@@ -1200,9 +1203,12 @@
         var badge=o.isRevision
             ?'<span style="background:rgba(255,152,0,0.15);color:#FF9800;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">REVISION</span>'
             :'<span style="background:rgba(76,175,80,0.15);color:#4CAF50;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">NEW</span>';
-        var bs='padding:5px 12px;border-radius:8px;border:1px solid #444;font-family:\'DM Sans\',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;margin-right:4px;transition:all 0.2s;';
+        
+        // बटणांची स्टाईल (margin काढून टाकले)
+        var bs='padding:5px 12px;border-radius:8px;border:1px solid #444;font-family:\'DM Sans\',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
         var grey='background:#2E2E2E;color:#888;';
         var ac={pending:'background:#C62828;color:white;border-color:#C62828;',processing:'background:#2196F3;color:white;border-color:#2196F3;',paused:'background:#FF9800;color:white;border-color:#FF9800;',completed:'background:#4CAF50;color:white;border-color:#4CAF50;'};
+        
         var actionBtns='';
         if (o.status!=='uploaded'&&o.status!=='done') {
             actionBtns='<button style="'+bs+(o.status==='pending'?ac.pending:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'pending\')">Pending</button>'
@@ -1211,16 +1217,18 @@
                       +'<button style="'+bs+(o.status==='completed'||o.status==='uploaded'?ac.completed:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'completed\')">Done</button>';
         }
         var filesBtn=o.files&&o.files.length
-            ?'<button class="a-action-btn" style="background:rgba(158,158,158,0.12);color:#9E9E9E;border:1px solid rgba(158,158,158,0.2);margin-right:8px;margin-bottom:4px;" onclick="aDownloadFiles(\''+o.id+'\')">⬇ Files</button><br>':'';
+            ?'<button class="a-action-btn" style="background:rgba(158,158,158,0.12);color:#9E9E9E;border:1px solid rgba(158,158,158,0.2);white-space:nowrap;" onclick="aDownloadFiles(\''+o.id+'\')">⬇ Files</button>':'';
+        
         var uploadBtn='';
         if (o.status==='completed'&&!o.adminOutput) {
-            uploadBtn='<button class="a-action-btn" style="background:rgba(76,175,80,0.12);color:#4CAF50;border:1px solid rgba(76,175,80,0.2);margin-top:4px;" onclick="aUploadOutput(\''+o.id+'\')">⬆ Upload Output</button>';
+            uploadBtn='<button class="a-action-btn" style="background:rgba(76,175,80,0.12);color:#4CAF50;border:1px solid rgba(76,175,80,0.2);white-space:nowrap;" onclick="aUploadOutput(\''+o.id+'\')">⬆ Upload Output</button>';
         } else if (o.status==='completed'&&o.adminOutput) {
             var fc=Array.isArray(o.adminOutput)?o.adminOutput.length:1;
-            uploadBtn='<span style="color:#4CAF50;font-size:0.78rem;font-weight:600;display:inline-block;margin-right:8px;">✅ Output Uploaded ('+fc+' file'+(fc>1?'s':'')+')</span>'
-                     +'<button onclick="aDeleteOutput(\''+o.id+'\')" style="background:rgba(244,67,54,0.12);color:#F44336;border:none;padding:4px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;margin-right:8px;">✕</button><br>'
-                     +'<button class="a-action-btn" style="background:rgba(161,136,127,0.15);color:#A1887F;border:1px solid rgba(161,136,127,0.3);margin-top:4px;" onclick="aSendToStorage(\''+o.id+'\')">📦 Send to Storage</button>';
+            uploadBtn='<span style="color:#4CAF50;font-size:0.78rem;font-weight:600;display:inline-block;white-space:nowrap;">✅ Output ('+fc+')</span>'
+                     +'<button onclick="aDeleteOutput(\''+o.id+'\')" style="background:rgba(244,67,54,0.12);color:#F44336;border:none;padding:4px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;">✕</button>'
+                     +'<button class="a-action-btn" style="background:rgba(161,136,127,0.15);color:#A1887F;border:1px solid rgba(161,136,127,0.3);white-space:nowrap;" onclick="aSendToStorage(\''+o.id+'\')">📦 Send to Storage</button>';
         }
+
         return '<tr>'
             +'<td style="color:#FF3D00;font-weight:700;">#'+o.id+'</td>'
             +'<td>'+badge+'</td>'
@@ -1230,7 +1238,8 @@
             +'<td style="max-width:250px;color:#888;word-wrap:break-word;white-space:normal;">'+prefix+headlineHtml+(o.desc||'No instruction')+filesInfo+revInfo+clientNoteHtml+'</td>'
             +'<td style="color:#888;white-space:nowrap;font-size:0.75rem;">'+formatExactTime(o.deadline)+'<br><span class="live-timer" data-deadline="'+o.deadline+'" style="color:#FF9800;font-size:0.75rem;font-weight:bold;margin-top:4px;display:block;"></span></td>'
             +'<td><span class="a-sb a-sb-'+o.status+'"><span class="a-sd a-sd-'+o.status+'"></span>'+sLbl+'</span></td>'
-            +'<td>'+filesBtn+actionBtns+uploadBtn+'</td>'
+            // इथे Flexbox लावून सगळे बटन्स एका लाईनमध्ये आणले आहेत:
+            +'<td><div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;">'+filesBtn+actionBtns+uploadBtn+'</div></td>'
             +'</tr>';
     }
 
