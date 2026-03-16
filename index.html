@@ -385,11 +385,28 @@
                     </div>
                     <div>
                         <div class="f-lbl">Deadline</div>
-                        <input type="date" class="fi" id="projDeadline">
+                        <select class="fs" id="projDeadline">
+                            <option value="">Select deadline...</option>
+                            <option value="8">8 Hours</option>
+                            <option value="12">12 Hours</option>
+                            <option value="24">24 Hours</option>
+                            <option value="48">48 Hours</option>
+                            <option value="72">72 Hours</option>
+                            <option value="96">96 Hours</option>
+                            <option value="120">120 Hours</option>
+                            <option value="144">144 Hours</option>
+                            <option value="168">168 Hours (7 Days)</option>
+                            <option value="192">192 Hours (8 Days)</option>
+                        </select>
                     </div>
                 </div>
             </div>
-            <button class="submit-btn" onclick="submitOrder()">Submit Order ✦</button>
+            <button class="submit-btn" onclick="var deadlineHours = document.getElementById('projDeadline').value;
+        if (!deadlineHours) { showToast('⚠️ Select deadline hours'); return; }
+        
+        var now = new Date();
+        var exactPlaced = now.toISOString();
+        var exactDeadline = new Date(now.getTime() + parseInt(deadlineHours) * 60 * 60 * 1000).toISOString();">Submit Order ✦</button>
         </div>
         <div class="sec-title">Active Orders</div>
         <div id="ordersList"></div>
@@ -789,8 +806,8 @@
                   + '<div class="order-mid">'
                   + '<h4 style="font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:2px;">Order Number #' + o.id + '</h4>'
                   + '<p style="font-size:0.95rem;font-weight:600;color:#1A1A1A;margin-bottom:4px;">' + o.type + '</p>'
-                  + '<p style="font-size:0.8rem;color:var(--muted);">Placed: ' + o.date + '</p>'
-                  + (o.deadline ? '<p style="font-size:0.8rem;color:var(--muted);margin-top:2px;">Deadline: ' + o.deadline + '</p>' : '')
+                  + '<p style="font-size:0.8rem;color:var(--muted);">Placed: ' + formatExactTime(o.date) + '</p>'
+                  + (o.deadline ? '<p style="font-size:0.8rem;color:var(--muted);margin-top:2px;">Deadline: ' + formatExactTime(o.deadline) + ' <span class="live-timer" data-deadline="'+o.deadline+'" style="color:#FF9800;font-weight:bold;margin-left:8px;"></span></p>' : '')
                   + (o.adminNote ? '<div style="background:#FFF3E0;border-left:3px solid #FF9800;padding:8px;margin-top:8px;border-radius:6px;"><p style="font-size:0.75rem;font-weight:700;color:#EF6C00;margin:0 0 4px 0;">⚠️ Admin Note:</p><p style="font-size:0.8rem;color:#666;margin:0;">' + o.adminNote + '</p></div>' : '')
                   + '</div>'
                   + '<span class="sp ' + statusClass + '">' + lbl + '</span>'
@@ -861,10 +878,10 @@
             type:          type,
             headline:      headline || '',
             description:   desc || 'No description',
-            deadline:      deadline || 'No deadline',
+            deadline:      exactDeadline,
             files:         uploadedFiles,
             status:        'pending',
-            placed_date:   today,
+            placed_date:   exactPlaced,
             is_revision:   false,
             admin_output:  null,
             client_note:   null,
@@ -1207,10 +1224,10 @@
             +'<td style="color:#FF3D00;font-weight:700;">#'+o.id+'</td>'
             +'<td>'+badge+'</td>'
             +'<td><div class="a-client-cell"><div class="a-client-av">'+initial+'</div><div><h4>'+cName+'</h4><p>'+o.email+'</p></div></div></td>'
-            +'<td style="color:#888;">'+(o.date||'')+'</td>'
+            +'<td style="color:#888;font-size:0.75rem;">'+formatExactTime(o.date)+'</td>'
             +'<td style="color:#F0F0F0;">'+o.type+'</td>'
             +'<td style="max-width:250px;color:#888;word-wrap:break-word;white-space:normal;">'+prefix+headlineHtml+(o.desc||'No instruction')+filesInfo+revInfo+clientNoteHtml+'</td>'
-            +'<td style="color:#888;white-space:nowrap;">'+(o.deadline||'No deadline')+'</td>'
+            +'<td style="color:#888;white-space:nowrap;font-size:0.75rem;">'+formatExactTime(o.deadline)+'<br><span class="live-timer" data-deadline="'+o.deadline+'" style="color:#FF9800;font-size:0.75rem;font-weight:bold;margin-top:4px;display:block;"></span></td>'
             +'<td><span class="a-sb a-sb-'+o.status+'"><span class="a-sd a-sd-'+o.status+'"></span>'+sLbl+'</span></td>'
             +'<td>'+filesBtn+actionBtns+uploadBtn+'</td>'
             +'</tr>';
@@ -1373,7 +1390,7 @@
                 +'<td style="color:#FF3D00;font-weight:700;">#'+o.id+'</td>'
                 +'<td><div class="a-client-cell"><div class="a-client-av">'+initial+'</div><div><h4>'+cName+'</h4><p>'+o.email+'</p></div></div></td>'
                 +'<td style="color:#F0F0F0;">'+o.type+'</td>'
-                +'<td style="color:#888;">'+(o.date||'')+'</td>'
+                +'<td style="color:#888;font-size:0.75rem;">'+formatExactTime(o.date)+'</td>'
                 +'<td style="color:#888;">'+(o.completedDate||'-')+'</td>'
                 +'<td><span class="a-sb a-sb-completed"><span class="a-sd a-sd-completed"></span>Done</span></td>'
                 +'<td>'+dlBtn+'</td>'
@@ -1440,6 +1457,41 @@
         aClosePwd();
         aRenderClients();
     }
+
+
+// ============================================================
+    // TIME & COUNTDOWN LOGIC
+    // ============================================================
+    function formatExactTime(isoString) {
+        if(!isoString) return '';
+        if(isoString.length === 10) return isoString; // जुन्या ऑर्डर्ससाठी
+        var d = new Date(isoString);
+        return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true });
+    }
+
+    function updateCountdowns() {
+        var timers = document.querySelectorAll('.live-timer');
+        var now = new Date();
+        timers.forEach(function(el) {
+            var dl = el.getAttribute('data-deadline');
+            if(!dl || dl === 'No deadline') return;
+            
+            var d = (dl.length === 10) ? new Date(dl + 'T23:59:59') : new Date(dl);
+            var diff = d - now;
+            
+            if (diff <= 0) {
+                el.innerHTML = '🚨 Overdue (वेळ संपली)';
+                el.style.color = '#F44336';
+            } else {
+                var totalMins = Math.floor(diff / (1000 * 60));
+                var h = Math.floor(totalMins / 60);
+                var m = totalMins % 60;
+                el.innerHTML = '⏳ ' + h + 'h ' + m + 'm left';
+            }
+        });
+    }
+    setInterval(updateCountdowns, 60000); 
+    setTimeout(updateCountdowns, 500);
     </script>
 </body>
 </html>
