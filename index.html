@@ -1249,6 +1249,20 @@
             +'<td style="white-space:nowrap;"><div style="display:flex;gap:4px;align-items:center;flex-wrap:nowrap;">'+filesBtn+actionBtns+uploadBtn+'</div></td>'
             +'</tr>';
     }
+function aRenderOrders() {
+        var tbody=document.getElementById('aOrdersBody');
+        var filtered=orders.filter(function(o){ return o.status!=='done'; });
+        if (aCurrentFilter!=='all') filtered=filtered.filter(function(o){ return o.status===aCurrentFilter; });
+        if (!filtered.length) { tbody.innerHTML='<tr><td colspan="9"><div class="a-empty"><div class="ei">📭</div><h4>No orders found</h4></div></td></tr>'; return; }
+        tbody.innerHTML=filtered.slice().reverse().map(aOrderRow).join('');
+    }
+
+    function aFilter(type, btn) {
+        aCurrentFilter=type;
+        document.querySelectorAll('.a-pills .a-pill').forEach(function(p){ p.classList.remove('active'); });
+        btn.classList.add('active');
+        aRenderOrders();
+    }
 
     // ============================================================
     // ADMIN — STATUS CHANGE → Supabase update
