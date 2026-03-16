@@ -499,7 +499,7 @@
                     <div class="a-admin-av">A</div>
                     <div class="a-admin-info-text">
                         <h4>Admin</h4>
-                        <p>admin@adcase.com</p>
+                        <p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5130353c383f113035323022347f323e3c">[email&#160;protected]</a></p>
                     </div>
                 </div>
                 <button class="a-logout-nav" onclick="aLogout()">🚪 Logout</button>
@@ -599,7 +599,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // ============================================================
     // ✅ SUPABASE CONFIGURATION
     // ⚠️  तुमचा Supabase URL आणि Anon Key इथे टाका
@@ -749,17 +749,45 @@
         document.getElementById('avatarLetter').textContent  = currentUser.name.charAt(0);
         document.getElementById('nameEl').textContent  = 'Welcome, ' + currentUser.name.split(' ')[0] + '! 👋';
         document.getElementById('emailEl').textContent = currentUser.email;
-        var today = new Date().toISOString().split('T')[0];
-        document.getElementById('projDeadline').value = today;
-        document.getElementById('projDeadline').min   = today;
+
+        // ✅ Refresh वर session टिकवा
+        sessionStorage.setItem('adcase_user', JSON.stringify(currentUser));
+
+        // ✅ या user चा saved photo load करा
+        var savedPhoto = localStorage.getItem('adcase_photo_' + currentUser.email);
+        var avatarEl = document.getElementById('avatarEl');
+        var oldImg = avatarEl.querySelector('img');
+        if (oldImg) avatarEl.removeChild(oldImg);
+        document.getElementById('avatarLetter').style.display = 'block';
+        if (savedPhoto) {
+            var newImg = document.createElement('img');
+            newImg.src = savedPhoto;
+            avatarEl.insertBefore(newImg, avatarEl.firstChild);
+            document.getElementById('avatarLetter').style.display = 'none';
+        }
+
         loadAllOrders();
         setupRealtimeOrders();
         window.scrollTo(0, 0);
     }
 
+    // ✅ Page load वर session check करा
+    (function() {
+        var saved = sessionStorage.getItem('adcase_user');
+        if (saved) {
+            try {
+                currentUser = JSON.parse(saved);
+                showHome();
+            } catch(e) {
+                sessionStorage.removeItem('adcase_user');
+            }
+        }
+    })();
+
     function goBack() {
         currentUser   = null;
         selectedFiles = [];
+        sessionStorage.removeItem('adcase_user');
         document.getElementById('clientSelect').value   = '';
         document.getElementById('clientPassword').value = '';
         document.getElementById('fileList').innerHTML   = '';
@@ -989,15 +1017,18 @@
             var html = '';
             pastOrders.slice().reverse().forEach(function(o) {
                 var ico = icons[o.type] || '✦';
+                var fc = o.adminOutput ? (Array.isArray(o.adminOutput) ? o.adminOutput.length : 1) : 0;
                 html += '<div style="background:#F5F5F7;border-radius:12px;padding:16px;margin-bottom:12px;">';
                 html += '<div style="display:flex;gap:12px;align-items:flex-start;">';
                 html += '<div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#1A1A1A,#FF3D00);color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">' + ico + '</div>';
                 html += '<div style="flex:1;min-width:0;"><h4 style="font-size:0.75rem;color:#888;margin:0 0 4px 0;">Order #' + o.id + '</h4>';
                 html += '<p style="font-size:1rem;font-weight:600;color:#1A1A1A;margin:0 0 8px 0;">' + o.type + '</p>';
                 html += '<div style="display:inline-block;background:rgba(76,175,80,0.15);color:#4CAF50;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;margin-bottom:8px;">✓ Done</div>';
-                html += '<div style="font-size:0.8rem;color:#666;"><div>Placed: ' + o.date + '</div>';
+                html += '<div style="font-size:0.8rem;color:#666;"><div>Placed: ' + formatExactTime(o.date) + '</div>';
                 if (o.completedDate) html += '<div>Completed: ' + o.completedDate + '</div>';
-                html += '</div></div></div></div>';
+                html += '</div>';
+                if (fc > 0) html += '<button onclick="downloadOutput('' + o.id + ''')" style="margin-top:10px;padding:7px 14px;background:#2E7D32;color:white;border:none;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;">⬇ Download (' + fc + ' file' + (fc > 1 ? 's' : '') + ')</button>';
+                html += '</div></div></div>';
             });
             container.innerHTML = html;
         }
@@ -1116,6 +1147,8 @@
         ctx.beginPath(); ctx.arc(size/2,size/2,size/2,0,Math.PI*2); ctx.clip();
         ctx.drawImage(img,dragState.curX,dragState.curY,img.offsetWidth,img.offsetHeight);
         var src=canvas.toDataURL('image/jpeg',0.9);
+        // ✅ प्रत्येक user च्या email नुसार वेगळा save
+        localStorage.setItem('adcase_photo_' + currentUser.email, src);
         var avatarEl=document.getElementById('avatarEl');
         var oldImg=avatarEl.querySelector('img'); if(oldImg) avatarEl.removeChild(oldImg);
         var newImg=document.createElement('img'); newImg.src=src;
@@ -1220,7 +1253,7 @@
         }
         
         var filesBtn=o.files&&o.files.length
-            ?'<button class="a-action-btn" style="background:rgba(158,158,158,0.12);color:#9E9E9E;border:1px solid rgba(158,158,158,0.2);padding:4px 8px;font-size:0.7rem;white-space:nowrap;" onclick="aDownloadFiles(\''+o.id+'\')">⬇ Files</button>':'';
+            ?'<button class="a-action-btn" title="Download client files" style="background:rgba(158,158,158,0.12);color:#9E9E9E;border:1px solid rgba(158,158,158,0.2);padding:4px 8px;font-size:0.9rem;white-space:nowrap;" onclick="aDownloadFiles(\''+o.id+'\')">⬇</button>':'';
         
         var uploadBtn='';
         if (o.status==='completed'&&!o.adminOutput) {
@@ -1501,13 +1534,4 @@ function aRenderOrders() {
             } else {
                 var totalMins = Math.floor(diff / (1000 * 60));
                 var h = Math.floor(totalMins / 60);
-                var m = totalMins % 60;
-                el.innerHTML = '⏳ ' + h + 'h ' + m + 'm left';
-            }
-        });
-    }
-    setInterval(updateCountdowns, 60000); 
-    setTimeout(updateCountdowns, 500);
-    </script>
-</body>
-</html>
+                var m 
