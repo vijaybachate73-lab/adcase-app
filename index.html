@@ -401,12 +401,7 @@
                     </div>
                 </div>
             </div>
-            <button class="submit-btn" onclick="var deadlineHours = document.getElementById('projDeadline').value;
-        if (!deadlineHours) { showToast('⚠️ Select deadline hours'); return; }
-        
-        var now = new Date();
-        var exactPlaced = now.toISOString();
-        var exactDeadline = new Date(now.getTime() + parseInt(deadlineHours) * 60 * 60 * 1000).toISOString();">Submit Order ✦</button>
+            <button class="submit-btn" onclick="submitOrder()">Submit Order ✦</button>
         </div>
         <div class="sec-title">Active Orders</div>
         <div id="ordersList"></div>
@@ -849,13 +844,19 @@
         var type     = document.getElementById('projType').value;
         var headline = document.getElementById('projHeadline').value.trim();
         var desc     = document.getElementById('projDesc').value.trim();
-        var deadline = document.getElementById('projDeadline').value;
-        if (!type) { showToast('Select project type'); return; }
+        var deadlineHours = document.getElementById('projDeadline').value;
+
+        if (!type) { showToast('⚠️ Select project type'); return; }
+        if (!deadlineHours) { showToast('⚠️ Select deadline hours'); return; }
+
+        var now = new Date();
+        var exactPlaced = now.toISOString();
+        var exactDeadline = new Date(now.getTime() + parseInt(deadlineHours) * 60 * 60 * 1000).toISOString();
 
         // ✅ 5 orders per day limit (per client)
-        var today = new Date().toISOString().split('T')[0];
+        var today = now.toISOString().split('T')[0];
         var todayOrders = orders.filter(function(o) {
-            return o.email === currentUser.email && o.date === today;
+            return o.email === currentUser.email && o.date && o.date.includes(today);
         });
         if (todayOrders.length >= 5) {
             showToast('⚠️ Daily limit reached (5 orders/day)');
