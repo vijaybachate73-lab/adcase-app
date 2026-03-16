@@ -749,6 +749,16 @@
         document.getElementById('avatarLetter').textContent  = currentUser.name.charAt(0);
         document.getElementById('nameEl').textContent  = 'Welcome, ' + currentUser.name.split(' ')[0] + '! 👋';
         document.getElementById('emailEl').textContent = currentUser.email;
+        sessionStorage.setItem('adcase_user', JSON.stringify(currentUser));
+        var savedPhoto = localStorage.getItem('adcase_photo_' + currentUser.email);
+        var av2 = document.getElementById('avatarEl');
+        var oi2 = av2.querySelector('img'); if (oi2) av2.removeChild(oi2);
+        document.getElementById('avatarLetter').style.display = 'block';
+        if (savedPhoto) {
+            var ni2 = document.createElement('img'); ni2.src = savedPhoto;
+            av2.insertBefore(ni2, av2.firstChild);
+            document.getElementById('avatarLetter').style.display = 'none';
+        }
 
         // ✅ Refresh वर session टिकवा
         sessionStorage.setItem('adcase_user', JSON.stringify(currentUser));
@@ -1534,4 +1544,21 @@ function aRenderOrders() {
             } else {
                 var totalMins = Math.floor(diff / (1000 * 60));
                 var h = Math.floor(totalMins / 60);
-                var m 
+                var m  = totalMins % 60;
+                el.innerHTML = '⏳ ' + h + 'h ' + m + 'm left';
+            }
+        });
+    }
+    setInterval(updateCountdowns, 60000);
+    setTimeout(updateCountdowns, 500);
+
+    window.addEventListener('load', function() {
+        var saved = sessionStorage.getItem('adcase_user');
+        if (saved) {
+            try { currentUser = JSON.parse(saved); showHome(); }
+            catch(e) { sessionStorage.removeItem('adcase_user'); }
+        }
+    });
+    </script>
+</body>
+</html>
