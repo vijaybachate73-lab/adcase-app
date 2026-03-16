@@ -1200,12 +1200,14 @@
         var clientNoteHtml=o.clientNote?'<div style="background:#FFF3E0;border-left:3px solid #FF9800;padding:6px 8px;margin-top:6px;border-radius:4px;"><strong style="color:#EF6C00;font-size:0.75rem;">⚠️ Client Note:</strong><div style="color:#666;font-size:0.8rem;margin-top:2px;">'+o.clientNote+'</div></div>':'';
         var prefix=o.isRevision?'<strong style="color:#FF9800;">REVISION:</strong> ':'<strong style="color:#4CAF50;">NEW:</strong> ';
         var headlineHtml=o.headline?'<div style="font-weight:600;color:#F0F0F0;margin-bottom:4px;">📝 '+o.headline+'</div>':'';
-        var badge=o.isRevision
-            ?'<span style="background:rgba(255,152,0,0.15);color:#FF9800;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">REVISION</span>'
-            :'<span style="background:rgba(76,175,80,0.15);color:#4CAF50;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">NEW</span>';
         
-        // बटणांची स्टाईल (margin काढून टाकले)
-        var bs='padding:5px 12px;border-radius:8px;border:1px solid #444;font-family:\'DM Sans\',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
+        // १. NEW/REVISION बॅजची साईज आणि पॅडिंग कमी केली
+        var badge=o.isRevision
+            ?'<span style="background:rgba(255,152,0,0.15);color:#FF9800;padding:3px 6px;border-radius:4px;font-size:0.65rem;font-weight:700;">REVISION</span>'
+            :'<span style="background:rgba(76,175,80,0.15);color:#4CAF50;padding:3px 6px;border-radius:4px;font-size:0.65rem;font-weight:700;">NEW</span>';
+        
+        // २. ॲक्शन बटणांची साईज, पॅडिंग आणि फॉन्ट कमी केला
+        var bs='padding:4px 8px;border-radius:6px;border:1px solid #444;font-family:\'DM Sans\',sans-serif;font-size:0.7rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
         var grey='background:#2E2E2E;color:#888;';
         var ac={pending:'background:#C62828;color:white;border-color:#C62828;',processing:'background:#2196F3;color:white;border-color:#2196F3;',paused:'background:#FF9800;color:white;border-color:#FF9800;',completed:'background:#4CAF50;color:white;border-color:#4CAF50;'};
         
@@ -1216,46 +1218,36 @@
                       +'<button style="'+bs+(o.status==='paused'?ac.paused:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'paused\')">Pause</button>'
                       +'<button style="'+bs+(o.status==='completed'||o.status==='uploaded'?ac.completed:grey)+'" onclick="aChangeStatus(\''+o.id+'\',\'completed\')">Done</button>';
         }
+        
         var filesBtn=o.files&&o.files.length
-            ?'<button class="a-action-btn" style="background:rgba(158,158,158,0.12);color:#9E9E9E;border:1px solid rgba(158,158,158,0.2);white-space:nowrap;" onclick="aDownloadFiles(\''+o.id+'\')">⬇ Files</button>':'';
+            ?'<button class="a-action-btn" style="background:rgba(158,158,158,0.12);color:#9E9E9E;border:1px solid rgba(158,158,158,0.2);padding:4px 8px;font-size:0.7rem;white-space:nowrap;" onclick="aDownloadFiles(\''+o.id+'\')">⬇ Files</button>':'';
         
         var uploadBtn='';
         if (o.status==='completed'&&!o.adminOutput) {
-            uploadBtn='<button class="a-action-btn" style="background:rgba(76,175,80,0.12);color:#4CAF50;border:1px solid rgba(76,175,80,0.2);white-space:nowrap;" onclick="aUploadOutput(\''+o.id+'\')">⬆ Upload Output</button>';
+            // नावे छोटी केली: 'Upload Output' ऐवजी फक्त '⬆ Upload'
+            uploadBtn='<button class="a-action-btn" style="background:rgba(76,175,80,0.12);color:#4CAF50;border:1px solid rgba(76,175,80,0.2);padding:4px 8px;font-size:0.7rem;white-space:nowrap;" onclick="aUploadOutput(\''+o.id+'\')">⬆ Upload</button>';
         } else if (o.status==='completed'&&o.adminOutput) {
             var fc=Array.isArray(o.adminOutput)?o.adminOutput.length:1;
-            uploadBtn='<span style="color:#4CAF50;font-size:0.78rem;font-weight:600;display:inline-block;white-space:nowrap;">✅ Output ('+fc+')</span>'
-                     +'<button onclick="aDeleteOutput(\''+o.id+'\')" style="background:rgba(244,67,54,0.12);color:#F44336;border:none;padding:4px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;">✕</button>'
-                     +'<button class="a-action-btn" style="background:rgba(161,136,127,0.15);color:#A1887F;border:1px solid rgba(161,136,127,0.3);white-space:nowrap;" onclick="aSendToStorage(\''+o.id+'\')">📦 Send to Storage</button>';
+            // नावे छोटी केली: 'Send to Storage' ऐवजी '📦 Archive'
+            uploadBtn='<span style="color:#4CAF50;font-size:0.7rem;font-weight:600;display:inline-block;white-space:nowrap;">✅ Output ('+fc+')</span>'
+                     +'<button onclick="aDeleteOutput(\''+o.id+'\')" style="background:rgba(244,67,54,0.12);color:#F44336;border:none;padding:3px 6px;border-radius:4px;font-size:0.65rem;font-weight:600;cursor:pointer;margin-left:4px;">✕</button>'
+                     +'<button class="a-action-btn" style="background:rgba(161,136,127,0.15);color:#A1887F;border:1px solid rgba(161,136,127,0.3);padding:4px 8px;font-size:0.7rem;margin-left:4px;white-space:nowrap;" onclick="aSendToStorage(\''+o.id+'\')">📦 Archive</button>';
         }
 
+        // ३. आणि ४. कॉलम्स डावीकडे सरकवले आणि Status मधला डॉट काढला
         return '<tr>'
-            +'<td style="color:#FF3D00;font-weight:700;">#'+o.id+'</td>'
-            +'<td>'+badge+'</td>'
-            +'<td><div class="a-client-cell"><div class="a-client-av">'+initial+'</div><div><h4>'+cName+'</h4><p>'+o.email+'</p></div></div></td>'
-            +'<td style="color:#888;font-size:0.75rem;">'+formatExactTime(o.date)+'</td>'
-            +'<td style="color:#F0F0F0;">'+o.type+'</td>'
-            +'<td style="max-width:250px;color:#888;word-wrap:break-word;white-space:normal;">'+prefix+headlineHtml+(o.desc||'No instruction')+filesInfo+revInfo+clientNoteHtml+'</td>'
-            +'<td style="color:#888;white-space:nowrap;font-size:0.75rem;">'+formatExactTime(o.deadline)+'<br><span class="live-timer" data-deadline="'+o.deadline+'" style="color:#FF9800;font-size:0.75rem;font-weight:bold;margin-top:4px;display:block;"></span></td>'
-            +'<td><span class="a-sb a-sb-'+o.status+'"><span class="a-sd a-sd-'+o.status+'"></span>'+sLbl+'</span></td>'
-            // इथे Flexbox लावून सगळे बटन्स एका लाईनमध्ये आणले आहेत:
-            +'<td><div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;">'+filesBtn+actionBtns+uploadBtn+'</div></td>'
+            +'<td style="color:#FF3D00;font-weight:700;width:5%;">#'+o.id+'</td>'
+            +'<td style="width:5%;">'+badge+'</td>'
+            +'<td style="width:12%;"><div class="a-client-cell"><div class="a-client-av">'+initial+'</div><div><h4 style="font-size:0.8rem;">'+cName+'</h4><p style="font-size:0.65rem;">'+o.email+'</p></div></div></td>'
+            +'<td style="color:#888;font-size:0.7rem;width:8%;">'+formatExactTime(o.date)+'</td>'
+            +'<td style="color:#F0F0F0;font-size:0.8rem;width:8%;">'+o.type+'</td>'
+            +'<td style="max-width:180px;color:#888;word-wrap:break-word;white-space:normal;font-size:0.8rem;">'+prefix+headlineHtml+(o.desc||'No instruction')+filesInfo+revInfo+clientNoteHtml+'</td>'
+            +'<td style="color:#888;white-space:nowrap;font-size:0.7rem;width:8%;">'+formatExactTime(o.deadline)+'<br><span class="live-timer" data-deadline="'+o.deadline+'" style="color:#FF9800;font-size:0.7rem;font-weight:bold;margin-top:4px;display:block;"></span></td>'
+            // Status मधला <span class="a-sd"> (डॉट) काढून टाकला आणि साईज कमी केली
+            +'<td style="width:5%;"><span class="a-sb a-sb-'+o.status+'" style="padding:4px 8px;font-size:0.68rem;">'+sLbl+'</span></td>'
+            // बटणांमधील अंतर (gap) 6px वरून 4px केलं
+            +'<td style="white-space:nowrap;"><div style="display:flex;gap:4px;align-items:center;flex-wrap:nowrap;">'+filesBtn+actionBtns+uploadBtn+'</div></td>'
             +'</tr>';
-    }
-
-    function aRenderOrders() {
-        var tbody=document.getElementById('aOrdersBody');
-        var filtered=orders.filter(function(o){ return o.status!=='done'; });
-        if (aCurrentFilter!=='all') filtered=filtered.filter(function(o){ return o.status===aCurrentFilter; });
-        if (!filtered.length) { tbody.innerHTML='<tr><td colspan="9"><div class="a-empty"><div class="ei">📭</div><h4>No orders found</h4></div></td></tr>'; return; }
-        tbody.innerHTML=filtered.slice().reverse().map(aOrderRow).join('');
-    }
-
-    function aFilter(type, btn) {
-        aCurrentFilter=type;
-        document.querySelectorAll('.a-pills .a-pill').forEach(function(p){ p.classList.remove('active'); });
-        btn.classList.add('active');
-        aRenderOrders();
     }
 
     // ============================================================
