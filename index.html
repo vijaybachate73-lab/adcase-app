@@ -279,10 +279,12 @@
         <div class="login-body">
             <h2>Welcome Back</h2>
             <p class="sub">Sign in to access your dashboard and manage your design projects.</p>
-            <label class="lbl">Email Address</label>
-            <div class="inp-group">
-                <input type="email" id="clientEmail" placeholder="client@example.com">
-            </div>
+            <label class="lbl">Select Account</label>
+            <div class="inp-group sel">
+                <select id="clientSelect">
+                    <option value="">Select your account...</option>
+                </select>
+            </div>
             <label class="lbl">Password</label>
             <div class="inp-group">
                 <input type="password" id="clientPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') doLogin()">
@@ -668,6 +670,15 @@ var realtimeChannel = null;
         clients = res.data; 
         console.log('✅ Loaded', clients.length, 'clients from Supabase');
         aRenderClients(); 
+        
+        // 🚀 Navin Code: Dropdown automatic bharne
+        var select = document.getElementById('clientSelect');
+        if (select) {
+            select.innerHTML = '<option value="">Select your account...</option>';
+            clients.forEach(function(c) {
+                select.innerHTML += '<option value="' + c.email + '">' + c.name + ' (' + c.email + ')</option>';
+            });
+        }
     }
 
     // Update all UI panels after data changes
@@ -705,19 +716,23 @@ loadAllClients();
     // LOGIN
     // ============================================================
     function doLogin() {
-        var idx = document.getElementById('clientSelect').value;
-        var pwd = document.getElementById('clientPassword').value;
-        if (idx === '') { showToast('Please select your name'); return; }
-        if (pwd === '')  { showToast('Please enter password'); return; }
-        var c = clients[parseInt(idx)];
-        if (c.password === pwd) {
-            currentUser = { name: c.name, email: c.email };
-            localStorage.setItem('adcase_user', JSON.stringify(currentUser));
-            showHome();
-        } else {
-            showToast('Wrong password! 🔐');
-        }
-    }
+        var emailInput = document.getElementById('clientSelect').value;
+        var pwdInput = document.getElementById('clientPassword').value.trim();
+        
+        if (emailInput === '') { showToast('⚠️ Please select your account'); return; }
+        if (pwdInput === '')  { showToast('⚠️ Please enter password'); return; }
+
+        // Supabase मधून आलेल्या clients मध्ये हा ईमेल शोधणे
+        var foundClient = clients.find(function(c) { return c.email === emailInput; });
+
+        if (foundClient && foundClient.password === pwdInput) {
+            currentUser = { name: foundClient.name, email: foundClient.email };
+            localStorage.setItem('adcase_user', JSON.stringify(currentUser));
+            showHome();
+        } else {
+            showToast('❌ Wrong password!');
+        }
+    }
 
     function showHome() {
         document.getElementById('loginScreen').style.display = 'none';
