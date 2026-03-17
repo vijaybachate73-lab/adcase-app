@@ -290,7 +290,7 @@
                 <input type="password" id="clientPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') doLogin()">
             </div>
             <button class="login-btn" onclick="doLogin()">Sign In</button>
-            <p style="text-align:center;margin-top:16px;font-size:0.8rem;color:var(--muted);font-weight:500;">Need help? <span style="color:var(--primary);cursor:pointer;">Contact Support</span></p>
+            <p style="text-align:center;margin-top:16px;font-size:0.8rem;color:var(--muted);font-weight:500;">Forgot Password? <span style="color:var(--primary);cursor:pointer;">Contact Admin</span></p>
             <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);text-align:center;">
                 <p style="font-size:0.85rem;color:var(--muted);">Administrator Access</p>
                 <p class="admin-txt" style="margin-top:6px;"><span onclick="showAdminLogin()">Admin Login</span></p>
@@ -678,7 +678,8 @@ var realtimeChannel = null;
         if (select) {
             select.innerHTML = '<option value="">Select your account...</option>';
             clients.forEach(function(c) {
-                select.innerHTML += '<option value="' + c.email + '">' + c.name + ' (' + c.email + ')</option>';
+                // इथे आपण कंसातील 'email' काढून टाकला आहे, पण value मध्ये तो तसाच सुरक्षित आहे!
+                select.innerHTML += '<option value="' + c.email + '">' + c.name + '</option>';
             });
         }
     }
@@ -729,7 +730,7 @@ loadAllClients();
 
         if (foundClient && foundClient.password === pwdInput) {
             currentUser = { name: foundClient.name, email: foundClient.email };
-            localStorage.setItem('adcase_user', JSON.stringify(currentUser));
+            sessionStorage.setItem('adcase_user', JSON.stringify(currentUser));
             showHome();
         } else {
             showToast('❌ Wrong password!');
@@ -752,7 +753,7 @@ loadAllClients();
     }
 
     function goBack() {
-        localStorage.removeItem('adcase_user');
+        sessionStorage.removeItem('adcase_user');
         currentUser   = null;
         selectedFiles = [];
         document.getElementById('clientSelect').value   = '';
@@ -1178,7 +1179,7 @@ loadAllClients();
             setTimeout(function(){ err.style.display='none'; },3000);
         } else {
             // ✅ लॉगिन यशस्वी!
-            localStorage.setItem('adcase_admin', 'true');
+            sessionStorage.setItem('adcase_admin', 'true');
             document.getElementById('adminLoginScreen').style.display='none';
             document.getElementById('loginScreen').style.display='none';
             document.getElementById('adminApp').style.display='block';
@@ -1189,7 +1190,7 @@ loadAllClients();
     }
 
     function aLogout() {
-        localStorage.removeItem('adcase_admin');
+        sessionStorage.removeItem('adcase_admin');
         document.getElementById('adminApp').style.display='none';
         document.getElementById('loginScreen').style.display='block';
         document.getElementById('aPassword').value='';
@@ -1585,26 +1586,29 @@ function aRenderOrders() {
     setTimeout(updateCountdowns, 500);
 
 // ============================================================
-    // AUTO LOGIN LOGIC (LOCALSTORAGE)
+    // AUTO LOGIN LOGIC (sessionStorage)
     // ============================================================
     window.onload = function() {
-        var savedAdmin = localStorage.getItem('adcase_admin');
-        if (savedAdmin === 'true') {
-            document.getElementById('adminLoginScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminApp').style.display = 'block';
+        // १. सर्वात आधी क्लायंट्सचा डेटाबेस लोड करा (जेणेकरून ड्रॉपडाऊन लगेच भरेल)
+        loadAllClients();
+
+        // २. मग चेक करा की कोणी आधीच लॉगिन आहे का
+        var savedAdmin = sessionStorage.getItem('adcase_admin');
+        if (savedAdmin === 'true') {
+            document.getElementById('adminLoginScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminApp').style.display = 'block';
             loadAllOrders();
-            loadAllClients(); // <--- ही नवीन ओळ इथे पण आली
             setupRealtimeOrders();
             return;
         }
 
-        var savedUser = localStorage.getItem('adcase_user');
-        if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            showHome();
-        }
-    };
+        var savedUser = sessionStorage.getItem('adcase_user');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            showHome();
+        }
+    };
     </script>
 </body>
 </html>
