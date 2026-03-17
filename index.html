@@ -557,17 +557,19 @@
     </div>
 
     <!-- Admin Password Modal -->
-    <div class="a-modal" id="aPwdModal">
-        <div class="a-modal-box">
-            <h3>🔑 Change Password</h3>
-            <p class="a-modal-sub" id="aPwdModalName">Client name</p>
-            <input type="text" class="a-modal-input" id="aNewPwdInput" placeholder="Enter new password">
-            <div class="a-modal-btns">
-                <button class="a-modal-cancel" onclick="aClosePwd()">Cancel</button>
-                <button class="a-modal-save" onclick="aSavePwd()">Save</button>
-            </div>
-        </div>
-    </div>
+    <div class="a-modal" id="aEditModal">
+        <div class="a-modal-box" style="width: 440px;">
+            <h3>✏️ Edit Client Information</h3>
+            <div class="a-field"><label>Full Name</label><input type="text" class="a-modal-input" id="aEditName"></div>
+            <div class="a-field"><label>Email Address</label><input type="email" class="a-modal-input" id="aEditEmail"></div>
+            <div class="a-field"><label>Phone Number</label><input type="tel" class="a-modal-input" id="aEditPhone"></div>
+            <div class="a-field"><label>Password</label><input type="text" class="a-modal-input" id="aEditPwd"></div>
+            <div class="a-modal-btns" style="margin-top: 20px;">
+                <button class="a-modal-cancel" onclick="aCloseEdit()">Cancel</button>
+                <button class="a-modal-save" onclick="aSaveEdit()">Save Changes ✓</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Past Orders Modal (Client side) -->
     <div id="pastOrdersModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:600;overflow-y:auto;">
@@ -1451,9 +1453,9 @@ function aRenderOrders() {
                 +'<div class="a-cc-top" style="margin-bottom:0;flex:1;"><div class="a-cc-av">'+c.name.charAt(0)+'</div>'
                 +'<div class="a-cc-info"><h4>'+c.name+'</h4><p>'+c.email+'</p></div></div>'
                 +'<div style="display:flex;gap:6px;">'
-                +'<button class="a-cc-btn a-cc-pwd" style="width:auto;padding:6px 10px;font-size:0.72rem;" onclick="aOpenPwd(\''+c.email+'\')">🔑 Change Password</button>'
-                +'<button class="a-cc-btn a-cc-del" style="width:auto;padding:6px 10px;font-size:0.72rem;" onclick="aDeleteClient(\''+c.email+'\')">🗑 Remove</button>'
-                +'</div></div></div>';
+                +'<button class="a-cc-btn" style="width:auto;padding:6px 12px;font-size:0.75rem;background:#333;color:#F0F0F0;border:1px solid #444;" onclick="aOpenEdit(\''+c.email+'\')">✏️ Edit Client</button>'
+                +'<button class="a-cc-btn a-cc-del" style="width:auto;padding:6px 12px;font-size:0.75rem;" onclick="aDeleteClient(\''+c.email+'\')">🗑 Remove</button>'
+                +'</div></div></div>';
         }).join('');
     }
 
@@ -1493,24 +1495,59 @@ function aRenderOrders() {
         showToast('🗑 Client removed');
     }
 
-    function aOpenPwd(email) {
-        aPwdTargetId=email;
-        var c=clients.find(function(x){ return x.email===email; });
-        document.getElementById('aPwdModalName').textContent='Change password for: '+(c?c.name:email);
-        document.getElementById('aNewPwdInput').value='';
-        document.getElementById('aPwdModal').classList.add('open');
-    }
+    var aEditTargetEmail = null;
 
-    function aClosePwd() { document.getElementById('aPwdModal').classList.remove('open'); aPwdTargetId=null; }
+    function aOpenEdit(email) {
+        aEditTargetEmail = email;
+        var c = clients.find(function(x) { return x.email === email; });
+        if (c) {
+            document.getElementById('aEditName').value = c.name || '';
+            document.getElementById('aEditEmail').value = c.email || '';
+            document.getElementById('aEditPhone').value = c.phone || '';
+            document.getElementById('aEditPwd').value = c.password || '';
+            document.getElementById('aEditModal').classList.add('open');
+        }
+    }
 
-    function aSavePwd() {
-        var newPwd=document.getElementById('aNewPwdInput').value.trim();
-        if (!newPwd) { showToast('⚠️ Enter new password'); return; }
-        var c=clients.find(function(x){ return x.email===aPwdTargetId; });
-        if (c) { c.password=newPwd; showToast('🔑 Password updated for '+c.name); }
-        aClosePwd();
-        aRenderClients();
-    }
+    function aCloseEdit() {
+        document.getElementById('aEditModal').classList.remove('open');
+        aEditTargetEmail = null;
+    }
+
+    async function aSaveEdit() {
+        var newName = document.getElementById('aEditName').value.trim();
+        var newEmail = document.getElementById('aEditEmail').value.trim();
+        var newPhone = document.getElementById('aEditPhone').value.trim();
+        var newPwd = document.getElementById('aEditPwd').value.trim();
+
+        if (!newName || !newPwd) { showToast('⚠️ Name and Password are required'); return; }
+
+        showToast('⏳ Saving changes...');
+
+        // 🚀 Supabase मध्ये सगळी माहिती अपडेट करणे
+        var res = await sb.from('clients')
+            .update({ name: newName, email: newEmail, phone: newPhone, password: newPwd })
+            .eq('email', aEditTargetEmail);
+
+        if (res.error) {
+            console.error('❌ Update error:', res.error);
+            showToast('⚠️ Error updating client.');
+            return;
+        }
+
+        // ॲपच्या स्क्रीनवर अपडेट करण्यासाठी
+        var c = clients.find(function(x) { return x.email === aEditTargetEmail; });
+        if (c) {
+            c.name = newName;
+            c.email = newEmail;
+            c.phone = newPhone;
+            c.password = newPwd;
+        }
+        
+        aCloseEdit();
+        aRenderClients();
+        showToast('✅ Client info updated!');
+    }
 
 
 // ============================================================
