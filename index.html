@@ -789,8 +789,9 @@ loadAllClients();
             var downloadBtn = '';
             if (o.status === 'completed' && o.adminOutput) {
                 var fc = Array.isArray(o.adminOutput) ? o.adminOutput.length : 1;
-                downloadBtn = '<button onclick="downloadOutput(\'' + o.id + '\')" style="margin-left:8px;padding:4px 10px;background:#2E7D32;color:white;border:none;border-radius:8px;font-size:0.7rem;font-weight:600;cursor:pointer;">⬇ Download' + (fc > 1 ? ' (' + fc + ')' : '') + '</button>'
-                            + '<button onclick="openSendBack(\'' + o.id + '\')" style="margin-left:4px;padding:4px 10px;background:#FF9800;color:white;border:none;border-radius:8px;font-size:0.7rem;font-weight:600;cursor:pointer;">↩ Send back</button>';
+                downloadBtn = '<button onclick="downloadOutput(\'' + o.id + '\')" style="margin-left:8px;padding:4px 10px;background:#E5E7EB;color:#333;border:none;border-radius:8px;font-size:0.7rem;font-weight:600;cursor:pointer;">↓ Download' + (fc > 1 ? ' (' + fc + ')' : '') + '</button>'
+                        + '<button onclick="openSendBack(\'' + o.id + '\')" style="margin-left:4px;padding:4px 10px;background:#FF9800;color:white;border:none;border-radius:8px;font-size:0.7rem;font-weight:600;cursor:pointer;">↩ Send back</button>'
+                        + '<button onclick="cApproveOrder(\'' + o.id + '\', this)" style="margin-left:4px;padding:4px 10px;background:#E5E7EB;color:#333;border:none;border-radius:8px;font-size:0.7rem;font-weight:600;cursor:pointer;">Approved</button>';
             }
             html += '<div class="order-row">'
                   + '<div class="oti oti-s">' + ico + '</div>'
@@ -1609,6 +1610,18 @@ function aRenderOrders() {
             showHome();
         }
     };
+
+    function cApproveOrder(orderId, btnElement) {
+        var isApproved = confirm("Approved?");
+        if (isApproved) {
+            btnElement.style.background = "#2E7D32"; 
+            btnElement.style.color = "white";
+            btnElement.innerHTML = "Approved ✓";
+        }
+    }
+</script>
+</body>
+</html>
     </script>
 </body>
 </html>
